@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workforce Management & Executive Analytics Portal</title>
+  
+  <!-- Chart.js & Plugins -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <style>
+    /* --- 🎨 THEME PALETTES --- */
+    
+    /* ☀️ Default Light Theme */
+    :root {
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #cbd5e1;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --glow-color: rgba(37, 99, 235, 0.25);
+      
+      --bg-theme-kpi: #f0f7ff;
+      --bg-theme-charts: #f8fafc;
+      --bg-theme-tables: #f0fdf4;
+      --table-header-bg: #f1f5f9;
+      --drag-bg: #e2e8f0;
+    }
+
+    /* 🌙 Dark Mode Theme */
+    [data-theme="dark"] {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      --primary: #3b82f6;
+      --primary-hover: #60a5fa;
+      --glow-color: rgba(59, 130, 246, 0.3);
+
+      --bg-theme-kpi: #1e293b;
+      --bg-theme-charts: #0f172a;
+      --bg-theme-tables: #1e293b;
+      --table-header-bg: #334155;
+      --drag-bg: #334155;
+    }
+
+    /* 🌊 Ocean Blue Theme */
+    [data-theme="ocean"] {
+      --bg-color: #0c4a6e;
+      --card-bg: #075985;
+      --text-main: #f0f9ff;
+      --text-muted: #bae6fd;
+      --border-color: #0284c7;
+      --primary: #38bdf8;
+      --primary-hover: #7dd3fc;
+      --glow-color: rgba(56, 189, 248, 0.3);
+
+      --bg-theme-kpi: #0369a1;
+      --bg-theme-charts: #075985;
+      --bg-theme-tables: #0369a1;
+      --table-header-bg: #0284c7;
+      --drag-bg: #0284c7;
+    }
+
+    /* Base Styles */
+    body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-main); transition: background-color 0.3s ease, color 0.3s ease; }
+    
+    .navbar { background: #1e293b; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; color: white; }
+    .nav-tabs { display: flex; gap: 8px; }
+    
+    .tab-btn { 
+      background: transparent; border: none; color: #94a3b8; padding: 16px 20px; font-size: 14px; font-weight: 600; cursor: pointer; 
+      border-bottom: 3px solid transparent; transition: all 0.3s ease;
+    }
+    .tab-btn:hover { color: #e2e8f0; }
+    .tab-btn.active { color: white; border-bottom-color: var(--primary); background: #0f172a; box-shadow: inset 0 -3px 10px var(--glow-color); }
+    
+    .container { padding: 20px; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .status-bar { 
+      background: var(--bg-theme-kpi); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 16px; 
+      display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--text-main);
+    }
+
+    .draggable-zone { display: flex; flex-direction: column; gap: 20px; }
+    .card { background: var(--card-bg); padding: 18px; border-radius: 12px; border: 1px solid var(--border-color); position: relative; transition: background-color 0.3s ease; }
+    .card-header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .card-header-bar h3 { margin: 0; font-size: 15px; color: var(--text-main); }
+    .drag-handle { cursor: grab; font-size: 12px; font-weight: 700; color: var(--text-muted); background: var(--drag-bg); padding: 4px 8px; border-radius: 4px; user-select: none; }
+
+    .theme-kpi-zone { background-color: var(--bg-theme-kpi); }
+    .theme-charts-zone { background-color: var(--bg-theme-charts); }
+    .theme-tables-zone { background-color: var(--bg-theme-tables); }
+
+    .overview-filter-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 12px; }
+    .overview-filter-bar label { font-weight: 700; font-size: 14px; color: var(--text-main); }
+    .overview-filter-bar select { padding: 8px 14px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; font-weight: 600; color: var(--text-main); background: var(--card-bg); }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .kpi-card { background: var(--card-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); }
+    .kpi-title { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+    .kpi-value { font-size: 20px; font-weight: 700; margin-top: 4px; color: var(--text-main); }
+    .kpi-subtext { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+    .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .chart-container { position: relative; height: 240px; width: 100%; }
+
+    .status-container { display: flex; align-items: center; gap: 12px; background: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); }
+    .status-chart-area { flex: 2; position: relative; height: 210px; }
+    .status-legend-box { flex: 1; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; color: var(--text-main); }
+    .legend-row { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 600; padding: 4px 6px; border-radius: 4px; }
+    .legend-badge { width: 10px; height: 10px; border-radius: 2px; display: inline-block; margin-right: 6px; }
+
+    /* Side-by-Side Slicers */
+    .slicers-container { display: flex; gap: 16px; margin-bottom: 12px; }
+    .slicer-card { flex: 1; background: var(--bg-theme-charts); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; }
+    .slicer-title { font-size: 12px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; display: flex; align-items: center; gap: 4px; }
+    .slicer-items { display: flex; flex-wrap: wrap; gap: 6px; max-height: 100px; overflow-y: auto; }
+    .slicer-btn { 
+      font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 14px; border: 1px solid var(--border-color); 
+      background: var(--card-bg); color: var(--text-main); cursor: pointer; transition: all 0.2s ease;
+    }
+    .slicer-btn:hover { background: var(--border-color); }
+    .slicer-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    /* Controls & Modals */
+    .table-controls { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+    .controls-group-left { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .controls-group-right { display: flex; gap: 10px; position: relative; }
+    .table-controls input, .btn-control { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--card-bg); color: var(--text-main); }
+    .btn-control { cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+
+    .column-popover {
+      display: none; position: absolute; top: 42px; right: 0; background: var(--card-bg); border: 1px solid var(--border-color);
+      border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.25); padding: 12px; z-index: 100; min-width: 200px; max-height: 300px; overflow-y: auto; color: var(--text-main);
+    }
+    .column-popover.active { display: block; }
+    .column-option { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 4px 0; cursor: pointer; }
+
+    .table-container, .weekly-container, .matrix-container { overflow-x: auto; border: 1px solid var(--border-color); border-radius: 8px; background: var(--card-bg); }
+    .table-container { max-height: 550px; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; table-layout: fixed; }
+    table.wrap-text { white-space: normal !important; word-wrap: break-word; }
+    table.wrap-text td, table.wrap-text th { max-width: 180px; }
+
+    th { position: sticky; top: 0; background: var(--table-header-bg); padding: 8px; text-align: center; font-weight: 700; border: 1px solid var(--border-color); z-index: 10; width: 140px; color: var(--text-main); }
+    td { padding: 6px 8px; border: 1px solid var(--border-color); text-align: center; width: 140px; text-overflow: ellipsis; overflow: hidden; color: var(--text-main); }
+
+    .editable-select, .editable-datetime { width: 100%; padding: 4px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 11px; background-color: var(--bg-theme-tables); font-weight: 600; color: var(--text-main); }
+
+    .badge-target { padding: 4px 8px; border-radius: 12px; font-weight: 700; font-size: 11px; display: inline-block; }
+    .badge-hit { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+    .badge-near { background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .badge-below { background-color: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; }
+
+    .matrix-header-member { background-color: var(--table-header-bg); font-size: 11px; font-weight: 700; }
+    .matrix-header-sub { background-color: var(--card-bg); font-size: 10px; }
+    .matrix-header-dept { background-color: var(--table-header-bg); font-size: 11px; font-weight: 700; }
+    .count-pending { background-color: #fca5a5; color: #7f1d1d; font-weight: 700; }
+  </style>
+</head>
+<body>
+
+  <div class="navbar">
+    <h2>📂 Workforce Portal</h2>
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('overview', event)">📊 Executive Overview</button>
+      <button class="tab-btn" onclick="switchTab('ticketing', event)">📑 WF Ticketing Data</button>
+      <button class="tab-btn" onclick="switchTab('teamlead', event)">👥 Team Lead Analytics</button>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- Live Google Sheets Data Stream Bar -->
+    <div class="status-bar">
+      <div>
+        <strong>🌐 Live Data Stream:</strong> <span id="dataStatus">Connecting to Google Sheets...</span>
+      </div>
+      <button class="btn-control" onclick="fetchGoogleSheetData()">🔄 Refresh Data</button>
+    </div>
+
+    <!-- 1. OVERVIEW TAB -->
+    <div id="overview" class="tab-content active">
+      <div class="draggable-zone">
+        
+        <div class="card theme-kpi-zone">
+          <div class="card-header-bar">
+            <h3>📈 Period Overview & Key Metrics</h3>
+            <span class="drag-handle">:: Drag Section</span>
+          </div>
+          
+          <div class="overview-filter-bar">
+            <div>
+              <label for="monthFilter">🗓️ Select Period / Month:</label>
+              <select id="monthFilter" onchange="renderOverviewMetrics()">
+                <option value="ALL">All Months (Year-to-Date)</option>
+              </select>
+            </div>
+
+            <!-- Theme Switcher Controls -->
+            <div>
+              <label for="themeSelect">🎨 Select Theme:</label>
+              <select id="themeSelect" onchange="changeTheme(this.value)">
+                <option value="light">☀️ Default Light</option>
+                <option value="dark">🌙 Dark Mode</option>
+                <option value="ocean">🌊 Ocean Blue</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr);">
+            <div class="kpi-card">
+              <div class="kpi-title"><span id="kpi-month-label">Selected Month</span> Total Requests 🎟️</div>
+              <div class="kpi-value" id="sept-total">0</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-title">Avg Target / Capacity 📈</div>
+              <div class="kpi-value" id="sept-avg-capacity">0</div>
+              <div class="kpi-subtext">Target per member (4.5 FTE capacity)</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-title">Active WF Team Members 🧑‍💻</div>
+              <div class="kpi-value" id="sept-wf-count">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card theme-charts-zone">
+          <div class="card-header-bar">
+            <h3>📊 Executive Visual Analytics</h3>
+            <span class="drag-handle">:: Drag Section</span>
+          </div>
+          <div class="charts-grid">
+            <div>
+              <h4 style="margin: 0 0 8px 0;">👥 Team Member Activity</h4>
+              <div class="chart-container"><canvas id="wfTeamChart"></canvas></div>
+            </div>
+            <div>
+              <h4 style="margin: 0 0 8px 0;">📊 Status Breakdown</h4>
+              <div class="status-container">
+                <div class="status-chart-area"><canvas id="septStatusChart"></canvas></div>
+                <div id="customStatusLegend" class="status-legend-box"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card theme-tables-zone">
+          <div class="card-header-bar">
+            <h3>📅 Weekly Ticket Breakdown per Team Member</h3>
+            <span class="drag-handle">:: Drag Section</span>
+          </div>
+          <div class="weekly-container">
+            <table class="weekly-table" id="weeklyTable" style="table-layout: auto;">
+              <thead>
+                <tr>
+                  <th style="text-align: left;">Team Member</th>
+                  <th>Week 1</th><th>Week 2</th><th>Week 3</th><th>Week 4</th><th>Week 5</th>
+                  <th>Total Tickets</th>
+                  <th>Target Status 🎯</th>
+                </tr>
+              </thead>
+              <tbody id="weeklyTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card theme-tables-zone">
+          <div class="card-header-bar">
+            <h3>📋 Request Type Breakdown by WF Team Member</h3>
+            <span class="drag-handle">:: Drag Section</span>
+          </div>
+          <div class="matrix-container">
+            <table id="matrixTable" style="table-layout: auto;">
+              <thead id="matrixHeader"></thead>
+              <tbody id="matrixBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 2. TICKETING TAB -->
+    <div id="ticketing" class="tab-content">
+      <div class="card">
+        <div class="card-header-bar">
+          <h3>📑 WF Ticketing Data Table</h3>
+          <span class="drag-handle">:: Drag Section</span>
+        </div>
+
+        <div class="slicers-container">
+          <div class="slicer-card">
+            <div class="slicer-title">🧑‍💻 Filter by WF Team Member:</div>
+            <div class="slicer-items" id="wfSlicerItems">
+              <button class="slicer-btn active" onclick="setSlicer('wf', '')">All</button>
+            </div>
+          </div>
+          <div class="slicer-card">
+            <div class="slicer-title">📌 Filter by Status:</div>
+            <div class="slicer-items" id="statusSlicerItems">
+              <button class="slicer-btn active" onclick="setSlicer('status', '')">All</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-controls">
+          <div class="controls-group-left">
+            <input type="text" id="searchInput" placeholder="🔍 Search table..." onkeyup="filterTable()">
+          </div>
+          <div class="controls-group-right">
+            <button class="btn-control" onclick="toggleColumnPopover()">🎛️ Manage Columns</button>
+            <div class="column-popover" id="columnPopover"></div>
+            <button class="btn-control" id="wrapToggleBtn" onclick="toggleTextWrap()">📝 Wrap Text: OFF</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table id="fullDataTable">
+            <thead id="tableHeader"></thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. TEAM LEAD ANALYTICS TAB -->
+    <div id="teamlead" class="tab-content">
+      <div class="draggable-zone">
+        
+        <div class="card theme-kpi-zone">
+          <div class="card-header-bar">
+            <h3>👤 Team Lead Overview & Request Insights</h3>
+            <span class="drag-handle">:: Drag Section</span>
+          </div>
+          
+          <div class="overview-filter-bar">
+            <label for="tlMonthFilter">🗓️ Select Period / Month:</label>
+            <select id="tlMonthFilter" onchange="renderTeamLeadAnalytics()">
+              <option value="ALL">All Months (Year-to-Date)</option>
+            </select>
+          </div>
+
+          <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="kpi-card">
+              <div class="kpi-title">Identified Team Leads ✉️</div>
+              <div class="kpi-value" id="tl-count">0</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-title">Top Requesting Dept 🏢</div>
+              <div class="kpi-value" id="tl-top-dept" style="font-size: 15px;">-</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-title">Most Requested Type 🔝</div>
+              <div class="kpi-value" id="tl-top-type" style="font-size: 15px; color: var(--primary);">-</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-title">Prefilled SLA Compliance Rate ⏱️</div>
+              <div class="kpi-value" id="tl-sla-rate" style="color: #16a34a;">0%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card theme-charts-zone">
+          <div class="card-header-bar">
+            <h3>📊 Visual Analytics & SLA Lead Time Distribution</h3>
+            <span class="drag-handle">:: Drag Section</span>
+          </div>
+          <div class="charts-grid">
+            <div>
+              <h4 style="margin: 0 0 8px 0;">🔝 Volume by Request Type</h4>
+              <div class="chart-container"><canvas id="reqTypeChart"></canvas></div>
+            </div>
+            <div>
+              <h4 style="margin: 0 0 8px 0;">⏱️ SLA / Lead Time Breakdown</h4>
+              <div class="chart-container"><canvas id="slaChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card theme-tables-zone">
+          <div class="card-header-bar">
+            <h3>📑 Cross-Tabular Matrix: Request Type × Requesting Department</h3>
+            <span class="drag-handle">:: Drag Section</span>
+          </div>
+          <div class="matrix-container">
+            <table id="reqDeptMatrixTable" style="table-layout: auto;">
+              <thead id="reqDeptMatrixHeader"></thead>
+              <tbody id="reqDeptMatrixBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card theme-tables-zone">
+          <div class="card-header-bar">
+            <h3>📊 Tickets per Team Lead & Trackers (SLA Performance)</h3>
+            <span class="drag-handle">:: Drag Section</span>
+          </div>
+          <div class="table-container" style="max-height: 400px;">
+            <table style="table-layout: auto;">
+              <thead>
+                <tr>
+                  <th style="text-align: left;">Email Address</th>
+                  <th>Total Tickets</th>
+                  <th>Prefilled (≥4d)</th>
+                  <th>Short Notice (1-3d)</th>
+                  <th>Same Day</th>
+                  <th>Late</th>
+                  <th>TD2 Updated</th>
+                </tr>
+              </thead>
+              <tbody id="tlTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    Chart.register(ChartDataLabels);
+
+    // Published Google Sheet CSV endpoint
+    const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSNUAsgjL3U5ywJBpHrEoufCzPcrTbqOPmvR2XNPhTfxTg9eX5ITB_fYOyhncFVbSibqH-bPzNSg_mF/pub?output=csv";
+
+    let globalObjects = [];
+    let globalHeaders = [];
+    let hiddenColumns = new Set();
+    let isTextWrapped = false;
+    
+    let activeWFSlicer = '';
+    let activeStatusSlicer = '';
+
+    let wfChartInstance = null;
+    let statusChartInstance = null;
+    let reqTypeChartInstance = null;
+    let slaChartInstance = null;
+
+    const EDITABLE_COLUMNS = {
+      'filed in pf': ['Yes', 'No', 'Pending', 'N/A'],
+      'td2 updated': ['Yes', 'No', 'In Progress', 'N/A'],
+      'follow-up': ['Required', 'None', 'Pending Lead', 'Completed'],
+      'request lead time': ['Prefilled (>=4 days)', 'Short notice (1-3 days)', 'Same day submission', 'Late']
+    };
+
+    // Automatically fetch Google Sheet CSV when DOM is fully loaded
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchGoogleSheetData();
+    });
+
+    function fetchGoogleSheetData() {
+      const statusElement = document.getElementById('dataStatus');
+      if (statusElement) statusElement.innerText = "Refreshing online data...";
+
+      Papa.parse(GOOGLE_SHEET_CSV_URL, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          globalObjects = results.data;
+          globalHeaders = results.meta.fields;
+
+          if (statusElement) {
+            statusElement.innerHTML = `<span style="color:#16a34a; font-weight:bold;">Connected</span> (${globalObjects.length} records loaded)`;
+          }
+
+          populateMonthDropdowns();
+          buildSlicers();
+          buildManageColumnsPopover();
+          renderTable();
+          renderOverviewMetrics();
+          renderTeamLeadAnalytics();
+        },
+        error: function(err) {
+          console.error("Error fetching Google Sheet:", err);
+          if (statusElement) {
+            statusElement.innerHTML = `<span style="color:#dc2626; font-weight:bold;">Failed to sync data</span>`;
+          }
+        }
+      });
+    }
+
+    function changeTheme(themeName) {
+      if (themeName === 'light') {
+        document.documentElement.removeAttribute('data-theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', themeName);
+      }
+      renderOverviewMetrics();
+      renderTeamLeadAnalytics();
+    }
+
+    function getChartTextColor() {
+      const theme = document.documentElement.getAttribute('data-theme');
+      return (theme === 'dark' || theme === 'ocean') ? '#f8fafc' : '#0f172a';
+    }
+
+    function switchTab(tabId, event) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      (event.target || event).classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    function getKeyCaseInsensitive(obj, keyName) {
+      if (!obj) return undefined;
+      const target = keyName.toLowerCase().trim();
+      const matchKey = Object.keys(obj).find(k => k.toLowerCase().trim() === target);
+      return matchKey ? obj[matchKey] : undefined;
+    }
+
+    function getFlexibleValue(row, possibleNames) {
+      if (!row) return '';
+      for (let name of possibleNames) {
+        const val = getKeyCaseInsensitive(row, name);
+        if (val !== undefined && val !== null && String(val).trim() !== '') {
+          return String(val).trim();
+        }
+      }
+      return '';
+    }
+
+    function buildSlicers() {
+      const wfSet = new Set();
+      const statusSet = new Set();
+
+      globalObjects.forEach(row => {
+        const wf = getKeyCaseInsensitive(row, 'WF');
+        const st = getKeyCaseInsensitive(row, 'STATUS');
+        if (wf && wf.trim()) wfSet.add(wf.trim());
+        if (st && st.trim()) statusSet.add(st.trim());
+      });
+
+      let wfHTML = `<button class="slicer-btn ${activeWFSlicer === '' ? 'active' : ''}" onclick="setSlicer('wf', '')">All</button>`;
+      Array.from(wfSet).sort().forEach(m => {
+        wfHTML += `<button class="slicer-btn ${activeWFSlicer === m ? 'active' : ''}" onclick="setSlicer('wf', '${m}')">${m}</button>`;
+      });
+      document.getElementById('wfSlicerItems').innerHTML = wfHTML;
+
+      let statusHTML = `<button class="slicer-btn ${activeStatusSlicer === '' ? 'active' : ''}" onclick="setSlicer('status', '')">All</button>`;
+      Array.from(statusSet).sort().forEach(s => {
+        statusHTML += `<button class="slicer-btn ${activeStatusSlicer === s ? 'active' : ''}" onclick="setSlicer('status', '${s}')">${s}</button>`;
+      });
+      document.getElementById('statusSlicerItems').innerHTML = statusHTML;
+    }
+
+    function setSlicer(type, val) {
+      if (type === 'wf') activeWFSlicer = val;
+      if (type === 'status') activeStatusSlicer = val;
+      buildSlicers();
+      filterTable();
+    }
+
+    function buildManageColumnsPopover() {
+      const container = document.getElementById('columnPopover');
+      container.innerHTML = globalHeaders.map((h, i) => `
+        <label class="column-option">
+          <input type="checkbox" ${!hiddenColumns.has(i) ? 'checked' : ''} onchange="toggleColumn(${i}, this.checked)">
+          <span>${h}</span>
+        </label>
+      `).join('');
+    }
+
+    function toggleColumnPopover() {
+      document.getElementById('columnPopover').classList.toggle('active');
+    }
+
+    function toggleColumn(colIdx, show) {
+      if (show) hiddenColumns.delete(colIdx);
+      else hiddenColumns.add(colIdx);
+      renderTable();
+    }
+
+    function handleTicketCloseTimeChange(rowIndex, inputValue) {
+      const dateObj = new Date(inputValue);
+      if (!isNaN(dateObj.getTime())) {
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        const formattedDate = `${month}/${day}/${year}`;
+
+        const hours = String(dateObj.getHours()).padStart(2, '0');
+        const mins = String(dateObj.getMinutes()).padStart(2, '0');
+        const formattedTime = `${hours}:${mins}`;
+
+        const dayOfMonth = dateObj.getDate();
+        const weekNum = Math.min(Math.floor((dayOfMonth - 1) / 7) + 1, 5);
+        const formattedWeek = `Week ${weekNum}`;
+
+        const closeKey = Object.keys(globalObjects[rowIndex]).find(k => k.toLowerCase().trim() === 'ticket close time') || 'Ticket Close Time';
+        const dateKey = Object.keys(globalObjects[rowIndex]).find(k => k.toLowerCase().trim() === 'date closed') || 'Date Closed';
+        const timeKey = Object.keys(globalObjects[rowIndex]).find(k => k.toLowerCase().trim() === 'time closed') || 'Time Closed';
+        const weekKey = Object.keys(globalObjects[rowIndex]).find(k => k.toLowerCase().trim() === 'week') || 'Week';
+
+        globalObjects[rowIndex][closeKey] = inputValue;
+        globalObjects[rowIndex][dateKey] = formattedDate;
+        globalObjects[rowIndex][timeKey] = formattedTime;
+        globalObjects[rowIndex][weekKey] = formattedWeek;
+
+        renderTable();
+        renderOverviewMetrics();
+      }
+    }
+
+    function renderTable() {
+      const thead = document.getElementById('tableHeader');
+      const tbody = document.getElementById('tableBody');
+
+      let headerHTML = '<tr>';
+      globalHeaders.forEach((h, i) => {
+        if (!hiddenColumns.has(i)) {
+          headerHTML += `<th><div class="th-header-cell"><span>${h}</span></div></th>`;
+        }
+      });
+      thead.innerHTML = headerHTML + '</tr>';
+
+      tbody.innerHTML = globalObjects.map((row, rowIndex) => {
+        let rowHTML = '<tr>';
+        globalHeaders.forEach((h, i) => {
+          if (!hiddenColumns.has(i)) {
+            const cleanHeader = h.toLowerCase().trim();
+            const cellValue = row[h] || '';
+
+            if (cleanHeader === 'ticket close time') {
+              rowHTML += `<td><input type="datetime-local" class="editable-datetime" value="${cellValue}" onchange="handleTicketCloseTimeChange(${rowIndex}, this.value)"></td>`;
+            } else if (EDITABLE_COLUMNS[cleanHeader]) {
+              let selectHTML = `<select class="editable-select" onchange="updateCellData(${rowIndex}, '${h}', this.value)">`;
+              EDITABLE_COLUMNS[cleanHeader].forEach(opt => {
+                const selected = opt.toLowerCase() === cellValue.toLowerCase() ? 'selected' : '';
+                selectHTML += `<option value="${opt}" ${selected}>${opt}</option>`;
+              });
+              rowHTML += `<td>${selectHTML}</select></td>`;
+            } else {
+              rowHTML += `<td>${cellValue || '-'}</td>`;
+            }
+          }
+        });
+        return rowHTML + '</tr>';
+      }).join('');
+    }
+
+    function updateCellData(rowIndex, headerName, val) {
+      globalObjects[rowIndex][headerName] = val;
+      renderTeamLeadAnalytics();
+    }
+
+    function filterTable() {
+      const searchVal = document.getElementById('searchInput').value.toLowerCase();
+      const wfVal = activeWFSlicer.toLowerCase();
+      const statusVal = activeStatusSlicer.toLowerCase();
+
+      const tbody = document.getElementById('tableBody');
+      const filtered = globalObjects.filter(row => {
+        const rowWF = (getKeyCaseInsensitive(row, 'WF') || '').toLowerCase();
+        const rowStatus = (getKeyCaseInsensitive(row, 'STATUS') || '').toLowerCase();
+        const matchesSearch = Object.values(row).some(val => String(val).toLowerCase().includes(searchVal));
+        return matchesSearch && (!wfVal || rowWF === wfVal) && (!statusVal || rowStatus === statusVal);
+      });
+
+      tbody.innerHTML = filtered.map((row, rowIndex) => {
+        let rowHTML = '<tr>';
+        globalHeaders.forEach((h, i) => {
+          if (!hiddenColumns.has(i)) {
+            const cleanHeader = h.toLowerCase().trim();
+            const cellValue = row[h] || '';
+
+            if (cleanHeader === 'ticket close time') {
+              rowHTML += `<td><input type="datetime-local" class="editable-datetime" value="${cellValue}" onchange="handleTicketCloseTimeChange(${rowIndex}, this.value)"></td>`;
+            } else if (EDITABLE_COLUMNS[cleanHeader]) {
+              let selectHTML = `<select class="editable-select" onchange="updateCellData(${rowIndex}, '${h}', this.value)">`;
+              EDITABLE_COLUMNS[cleanHeader].forEach(opt => {
+                const selected = opt.toLowerCase() === cellValue.toLowerCase() ? 'selected' : '';
+                selectHTML += `<option value="${opt}" ${selected}>${opt}</option>`;
+              });
+              rowHTML += `<td>${selectHTML}</select></td>`;
+            } else {
+              rowHTML += `<td>${cellValue || '-'}</td>`;
+            }
+          }
+        });
+        return rowHTML + '</tr>';
+      }).join('');
+    }
+
+    function toggleTextWrap() {
+      isTextWrapped = !isTextWrapped;
+      document.getElementById('fullDataTable').classList.toggle('wrap-text', isTextWrapped);
+      document.getElementById('wrapToggleBtn').innerText = `📝 Wrap Text: ${isTextWrapped ? 'ON' : 'OFF'}`;
+    }
+
+    function populateMonthDropdowns() {
+      const monthsSet = new Set();
+      globalObjects.forEach(row => {
+        const m1 = getKeyCaseInsensitive(row, 'Month Year') || getKeyCaseInsensitive(row, 'Month - Year');
+        const ts = getKeyCaseInsensitive(row, 'Timestamp') || getKeyCaseInsensitive(row, 'Date');
+        if (m1 && m1.trim()) monthsSet.add(m1.trim());
+        else if (ts) {
+          const d = new Date(ts);
+          if (!isNaN(d.getTime())) monthsSet.add(d.toLocaleString('en-US', { month: 'long', year: 'numeric' }));
+        }
+      });
+
+      const monthList = Array.from(monthsSet);
+      let html = '<option value="ALL">All Months (Year-to-Date)</option>';
+      monthList.forEach(m => html += `<option value="${m}">${m}</option>`);
+      
+      document.getElementById('monthFilter').innerHTML = html;
+      document.getElementById('tlMonthFilter').innerHTML = html;
+
+      if (monthList.length > 0) {
+        const lastMonth = monthList[monthList.length - 1];
+        document.getElementById('monthFilter').value = lastMonth;
+        document.getElementById('tlMonthFilter').value = lastMonth;
+      }
+    }
+
+    function renderOverviewMetrics() {
+      const selectedMonth = document.getElementById('monthFilter').value;
+      const labelColor = getChartTextColor();
+      document.getElementById('kpi-month-label').innerText = selectedMonth === 'ALL' ? 'Overall' : selectedMonth;
+
+      const activeDataset = globalObjects.filter(row => {
+        if (selectedMonth === 'ALL') return true;
+        const m1 = getKeyCaseInsensitive(row, 'Month Year') || getKeyCaseInsensitive(row, 'Month - Year') || '';
+        const ts = getKeyCaseInsensitive(row, 'Timestamp') || getKeyCaseInsensitive(row, 'Date') || '';
+        return `${m1} ${ts}`.toLowerCase().includes(selectedMonth.toLowerCase());
+      });
+
+      const totalRequests = activeDataset.length;
+      document.getElementById('sept-total').innerText = totalRequests;
+      
+      const targetCapacity = (totalRequests / 4.5).toFixed(1);
+      document.getElementById('sept-avg-capacity').innerText = targetCapacity;
+
+      const wfCounts = {};
+      const wfWeeklyData = {};
+
+      activeDataset.forEach(row => {
+        const name = getKeyCaseInsensitive(row, 'WF');
+        const ts = getKeyCaseInsensitive(row, 'Timestamp') || getKeyCaseInsensitive(row, 'Date');
+        
+        if (name && name.trim()) {
+          const cleanName = name.trim();
+          wfCounts[cleanName] = (wfCounts[cleanName] || 0) + 1;
+          
+          if (!wfWeeklyData[cleanName]) wfWeeklyData[cleanName] = [0, 0, 0, 0, 0];
+          
+          let weekIdx = 0;
+          if (ts) {
+            const dateObj = new Date(ts);
+            if (!isNaN(dateObj.getTime())) {
+              const day = dateObj.getDate();
+              weekIdx = Math.min(Math.floor((day - 1) / 7), 4);
+            }
+          }
+          wfWeeklyData[cleanName][weekIdx]++;
+        }
+      });
+
+      const members = Object.keys(wfCounts).sort();
+      document.getElementById('sept-wf-count').innerText = `${members.length} Members`;
+
+      if (wfChartInstance) wfChartInstance.destroy();
+      wfChartInstance = new Chart(document.getElementById('wfTeamChart'), {
+        type: 'bar',
+        data: { labels: members, datasets: [{ label: 'Tickets', data: members.map(m => wfCounts[m]), backgroundColor: '#2563eb', borderRadius: 6 }] },
+        options: { 
+          responsive: true, maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false }, ticks: { color: labelColor } },
+            y: { grid: { display: false }, ticks: { color: labelColor } }
+          },
+          plugins: { 
+            legend: { display: false }, 
+            datalabels: { display: true, color: '#ffffff', font: { weight: 'bold' }, formatter: v => v > 0 ? v : '' } 
+          } 
+        }
+      });
+
+      const statusCounts = {};
+      activeDataset.forEach(row => {
+        const statusVal = getKeyCaseInsensitive(row, 'STATUS');
+        if (statusVal && statusVal.trim()) statusCounts[statusVal.trim().toUpperCase()] = (statusCounts[statusVal.trim().toUpperCase()] || 0) + 1;
+      });
+
+      const statusColors = ['#16a34a', '#2563eb', '#d97706', '#dc2626', '#818cf8', '#06b6d4'];
+      const statusLabels = Object.keys(statusCounts);
+      const statusData = Object.values(statusCounts);
+
+      if (statusChartInstance) statusChartInstance.destroy();
+      statusChartInstance = new Chart(document.getElementById('septStatusChart'), {
+        type: 'doughnut',
+        data: { labels: statusLabels, datasets: [{ data: statusData, backgroundColor: statusColors.slice(0, statusLabels.length) }] },
+        options: { 
+          responsive: true, maintainAspectRatio: false, 
+          plugins: { 
+            legend: { display: false }, 
+            datalabels: { display: true, color: '#ffffff', font: { weight: 'bold' }, formatter: v => v > 0 ? v : '' } 
+          } 
+        }
+      });
+
+      document.getElementById('customStatusLegend').innerHTML = statusLabels.map((st, i) => `
+        <div class="legend-row">
+          <span><span class="legend-badge" style="background:${statusColors[i]}"></span>${st}</span>
+          <b>${statusData[i]}</b>
+        </div>
+      `).join('');
+
+      const numTarget = parseFloat(targetCapacity) || 0;
+      document.getElementById('weeklyTableBody').innerHTML = members.map(m => {
+        const w = wfWeeklyData[m];
+        const total = w.reduce((a, b) => a + b, 0);
+        
+        let badgeHTML = '<span class="badge-target badge-below">Below Target</span>';
+        if (total >= numTarget) badgeHTML = '<span class="badge-target badge-hit">Target Hit</span>';
+        else if (total >= numTarget * 0.8) badgeHTML = '<span class="badge-target badge-near">Near Target</span>';
+
+        return `
+          <tr>
+            <td style="text-align: left; font-weight: 600;">🧑‍💻 ${m}</td>
+            <td>${w[0]}</td><td>${w[1]}</td><td>${w[2]}</td><td>${w[3]}</td><td>${w[4]}</td>
+            <td><b>${total}</b></td>
+            <td>${badgeHTML}</td>
+          </tr>`;
+      }).join('');
+
+      renderMatrixTable(activeDataset);
+    }
+
+    function renderMatrixTable(dataset) {
+      const members = Array.from(new Set(dataset.map(r => getKeyCaseInsensitive(r, 'WF')).filter(Boolean))).sort();
+      const typeSet = Array.from(new Set(dataset.map(r => getKeyCaseInsensitive(r, 'TYPE OF REQUEST') || getKeyCaseInsensitive(r, 'Request Type')).filter(Boolean))).sort();
+
+      let topHeader = `<tr><th rowspan="2" style="text-align: left;">TYPE OF REQUEST</th>`;
+      members.forEach(m => topHeader += `<th colspan="2" class="matrix-header-member">${m}</th>`);
+      topHeader += `<th rowspan="2">TOTAL</th></tr><tr>`;
+      members.forEach(() => topHeader += `<th class="matrix-header-sub">Closed</th><th class="matrix-header-sub">Pending</th>`);
+      topHeader += `</tr>`;
+      document.getElementById('matrixHeader').innerHTML = topHeader;
+
+      let rowsHTML = '';
+      typeSet.forEach(type => {
+        let rowTotal = 0, cells = '';
+        members.forEach(member => {
+          let closed = 0, pending = 0;
+          dataset.forEach(row => {
+            const rType = getKeyCaseInsensitive(row, 'TYPE OF REQUEST') || getKeyCaseInsensitive(row, 'Request Type') || '';
+            const rWF = getKeyCaseInsensitive(row, 'WF') || '';
+            const rStatus = (getKeyCaseInsensitive(row, 'STATUS') || '').toLowerCase();
+            if (rType.trim().toLowerCase() === type.toLowerCase() && rWF.trim().toLowerCase() === member.toLowerCase()) {
+              if (rStatus.includes('closed') || rStatus.includes('approved')) closed++; else pending++;
+            }
+          });
+          rowTotal += (closed + pending);
+          cells += `<td>${closed || ''}</td><td class="${pending > 0 ? 'count-pending' : ''}">${pending || ''}</td>`;
+        });
+        rowsHTML += `<tr><td style="text-align: left; font-weight: 600;">${type}</td>${cells}<td><b>${rowTotal}</b></td></tr>`;
+      });
+      document.getElementById('matrixBody').innerHTML = rowsHTML;
+    }
+
+    function renderTeamLeadAnalytics() {
+      const selectedMonth = document.getElementById('tlMonthFilter').value;
+      const labelColor = getChartTextColor();
+
+      const activeDataset = globalObjects.filter(row => {
+        if (selectedMonth === 'ALL') return true;
+        const m1 = getKeyCaseInsensitive(row, 'Month Year') || getKeyCaseInsensitive(row, 'Month - Year') || '';
+        const ts = getKeyCaseInsensitive(row, 'Timestamp') || getKeyCaseInsensitive(row, 'Date') || '';
+        return `${m1} ${ts}`.toLowerCase().includes(selectedMonth.toLowerCase());
+      });
+
+      const deptCounts = {};
+      const typeCounts = {};
+      const tlData = {};
+      const slaCounts = { 'Prefilled': 0, 'Short notice': 0, 'Same day': 0, 'Late': 0 };
+
+      activeDataset.forEach(row => {
+        const dept = getFlexibleValue(row, ['Requesting Department', 'Department']) || 'General';
+        const email = getFlexibleValue(row, ['Email Address', 'Email', 'Team Lead Email', 'Lead Email']) || 'unassigned@company.com';
+        const reqType = getFlexibleValue(row, ['TYPE OF REQUEST', 'Request Type']) || 'General Request';
+        const leadTime = getFlexibleValue(row, ['Request Lead Time', 'Lead Time', 'SLA Lead Time', 'SLA']).toLowerCase();
+        const td2 = getFlexibleValue(row, ['TD2 Updated', 'TD2', 'TD2 Status']).toLowerCase();
+
+        deptCounts[dept] = (deptCounts[dept] || 0) + 1;
+        typeCounts[reqType] = (typeCounts[reqType] || 0) + 1;
+
+        if (!tlData[email]) {
+          tlData[email] = { tickets: 0, td2Yes: 0, prefilled: 0, shortNotice: 0, sameDay: 0, late: 0 };
+        }
+
+        tlData[email].tickets++;
+
+        if (leadTime.includes('prefilled') || leadTime.includes('>=4')) {
+          slaCounts['Prefilled']++;
+          tlData[email].prefilled++;
+        } else if (leadTime.includes('short') || leadTime.includes('1-3')) {
+          slaCounts['Short notice']++;
+          tlData[email].shortNotice++;
+        } else if (leadTime.includes('same day') || leadTime.includes('0 day')) {
+          slaCounts['Same day']++;
+          tlData[email].sameDay++;
+        } else if (leadTime.includes('late')) {
+          slaCounts['Late']++;
+          tlData[email].late++;
+        } else {
+          slaCounts['Prefilled']++;
+          tlData[email].prefilled++;
+        }
+
+        if (['yes', 'y', 'true', '1', 'completed', 'updated', 'in progress'].includes(td2)) tlData[email].td2Yes++;
+      });
+
+      const tls = Object.keys(tlData);
+      document.getElementById('tl-count').innerText = tls.length;
+
+      let topDept = '-', maxDeptCount = 0;
+      Object.keys(deptCounts).forEach(d => {
+        if (deptCounts[d] > maxDeptCount) { maxDeptCount = deptCounts[d]; topDept = d; }
+      });
+      document.getElementById('tl-top-dept').innerText = topDept !== '-' ? `${topDept} (${maxDeptCount})` : '-';
+
+      let topType = '-', maxTypeCount = 0;
+      Object.keys(typeCounts).forEach(t => {
+        if (typeCounts[t] > maxTypeCount) { maxTypeCount = typeCounts[t]; topType = t; }
+      });
+      document.getElementById('tl-top-type').innerText = topType !== '-' ? `${topType} (${maxTypeCount})` : '-';
+
+      const totalSla = activeDataset.length;
+      const prefilledRate = totalSla > 0 ? ((slaCounts['Prefilled'] / totalSla) * 100).toFixed(1) : 0;
+      document.getElementById('tl-sla-rate').innerText = `${prefilledRate}%`;
+
+      const topTypesSorted = Object.keys(typeCounts).sort((a,b) => typeCounts[b] - typeCounts[a]).slice(0, 6);
+      if (reqTypeChartInstance) reqTypeChartInstance.destroy();
+      reqTypeChartInstance = new Chart(document.getElementById('reqTypeChart'), {
+        type: 'bar',
+        data: { labels: topTypesSorted, datasets: [{ label: 'Tickets', data: topTypesSorted.map(t => typeCounts[t]), backgroundColor: '#10b981', borderRadius: 6 }] },
+        options: { 
+          responsive: true, maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false }, ticks: { color: labelColor } },
+            y: { grid: { display: false }, ticks: { color: labelColor } }
+          },
+          plugins: { 
+            legend: { display: false }, 
+            datalabels: { display: true, color: '#ffffff', font: { weight: 'bold' }, formatter: v => v > 0 ? v : '' } 
+          } 
+        }
+      });
+
+      if (slaChartInstance) slaChartInstance.destroy();
+      slaChartInstance = new Chart(document.getElementById('slaChart'), {
+        type: 'bar',
+        data: { 
+          labels: ['Prefilled (>=4d)', 'Short notice (1-3d)', 'Same day submission', 'Late'], 
+          datasets: [{ label: 'Tickets', data: Object.values(slaCounts), backgroundColor: ['#16a34a', '#eab308', '#f97316', '#dc2626'], borderRadius: 6 }] 
+        },
+        options: { 
+          responsive: true, maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false }, ticks: { color: labelColor } },
+            y: { grid: { display: false }, ticks: { color: labelColor } }
+          },
+          plugins: { 
+            legend: { display: false }, 
+            datalabels: { display: true, color: '#ffffff', font: { weight: 'bold' }, formatter: v => v > 0 ? v : '' } 
+          } 
+        }
+      });
+
+      renderReqDeptMatrix(activeDataset);
+
+      document.getElementById('tlTableBody').innerHTML = tls.sort().map(e => `
+        <tr>
+          <td style="text-align: left; font-weight: 600;">✉️ ${e}</td>
+          <td><b>${tlData[e].tickets}</b></td>
+          <td><span style="color: #15803d; font-weight: 600;">${tlData[e].prefilled}</span></td>
+          <td><span style="color: #b45309;">${tlData[e].shortNotice}</span></td>
+          <td><span style="color: #c2410c;">${tlData[e].sameDay}</span></td>
+          <td><span style="color: #be123c; font-weight: 600;">${tlData[e].late}</span></td>
+          <td>${tlData[e].td2Yes}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderReqDeptMatrix(dataset) {
+      const depts = Array.from(new Set(dataset.map(r => getFlexibleValue(r, ['Requesting Department', 'Department']) || 'General'))).sort();
+      const reqTypes = Array.from(new Set(dataset.map(r => getFlexibleValue(r, ['TYPE OF REQUEST', 'Request Type']) || 'General Request'))).sort();
+
+      let headerHTML = `<tr><th style="text-align: left;">Request Type</th>`;
+      depts.forEach(d => headerHTML += `<th class="matrix-header-dept">${d}</th>`);
+      headerHTML += `<th>Total</th></tr>`;
+      document.getElementById('reqDeptMatrixHeader').innerHTML = headerHTML;
+
+      let bodyHTML = '';
+      reqTypes.forEach(t => {
+        let rowTotal = 0;
+        let cells = '';
+        depts.forEach(d => {
+          const count = dataset.filter(r => {
+            const rType = getFlexibleValue(r, ['TYPE OF REQUEST', 'Request Type']) || 'General Request';
+            const rDept = getFlexibleValue(r, ['Requesting Department', 'Department']) || 'General';
+            return rType.trim() === t && rDept.trim() === d;
+          }).length;
+          rowTotal += count;
+          cells += `<td>${count || ''}</td>`;
+        });
+        bodyHTML += `<tr><td style="text-align: left; font-weight: 600;">${t}</td>${cells}<td><b>${rowTotal}</b></td></tr>`;
+      });
+      document.getElementById('reqDeptMatrixBody').innerHTML = bodyHTML;
+    }
+  </script>
+
+</body>
+</html>
