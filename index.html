@@ -201,7 +201,7 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* Glass Status Banner */
+    /* Glass Status & Control Banner */
     .status-bar { 
       background: var(--card-bg); 
       backdrop-filter: blur(16px);
@@ -218,7 +218,7 @@
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
     }
 
-    .status-actions { display: flex; gap: 10px; align-items: center; }
+    .status-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
     .draggable-zone { 
       display: flex; 
@@ -264,30 +264,9 @@
       gap: 10px;
     }
 
-    /* Export Accent Button */
-    .btn-export {
-      background: linear-gradient(135deg, rgba(45, 212, 191, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%);
-      border: 1px solid var(--primary);
-      color: var(--primary);
-      font-size: 12px;
-      font-weight: 700;
-      padding: 5px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .btn-export:hover {
-      background: var(--primary);
-      color: #0b0f17;
-      box-shadow: 0 0 12px var(--primary-glow);
-    }
-
-    /* Active Drag Handle */
+    /* Drag Handle - Controlled by Mode Toggle */
     .drag-handle { 
+      display: none;
       cursor: grab; 
       font-size: 11px; 
       font-weight: 700; 
@@ -300,6 +279,10 @@
       letter-spacing: 0.05em;
       text-transform: uppercase;
       transition: background 0.2s ease;
+    }
+
+    .drag-mode-active .drag-handle {
+      display: inline-block;
     }
 
     .drag-handle:active { cursor: grabbing; background: var(--primary); color: #0b0f17; }
@@ -372,7 +355,7 @@
       transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* 🔥 COOL RECENT PENDING TICKETS GLASSCARDS */
+    /* 🔥 RECENT PENDING TICKETS GLASSCARDS */
     .pending-tickets-wrapper {
       margin-top: 22px;
       padding-top: 18px;
@@ -438,6 +421,70 @@
       font-size: 11px;
       color: var(--text-muted);
       margin-top: 6px;
+    }
+
+    /* SLA BREAKDOWN METERS SECTION */
+    .sla-meters-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .sla-meter-card {
+      background: var(--card-bg-elevated);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .sla-meter-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .sla-meter-value {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .sla-meter-sub {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* MONTHLY SUMMARY STYLING */
+    .monthly-notes-box {
+      background: var(--card-bg-elevated);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    .monthly-notes-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .monthly-notes-list {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.7;
     }
 
     /* Side-by-Side Slicers */
@@ -562,6 +609,10 @@
         <span class="tab-icon">👥</span>
         <span class="tab-label">Team Lead Analytics</span>
       </button>
+      <button class="tab-btn" onclick="switchTab('monthlySummary', event)">
+        <span class="tab-icon">📈</span>
+        <span class="tab-label">Monthly Summary</span>
+      </button>
     </div>
   </aside>
 
@@ -569,15 +620,25 @@
   <div class="main-wrapper">
     <div class="container">
 
-      <!-- Live Data Connection Banner -->
+      <!-- Live Data Banner & Global Control Bubble Bar -->
       <div class="status-bar">
         <div>
-          <strong>🌐 Live Data Stream:</strong> <span id="dataStatus">Connecting to Google Sheets Proxy...</span>
+          <strong>🌐 Offline Data Portal:</strong> <span id="dataStatus">Awaiting File Input...</span>
         </div>
         <div class="status-actions">
           <input type="file" id="offlineFileInput" accept=".csv" style="display: none;" onchange="handleFileUpload(event)">
-          <button class="btn-control" onclick="document.getElementById('offlineFileInput').click()">📂 Upload Local CSV</button>
-          <button class="btn-control" onclick="fetchGoogleSheetData()">🔄 Sync Live Sheet</button>
+          <button class="btn-control" onclick="document.getElementById('offlineFileInput').click()">📂 Upload CSV File</button>
+          
+          <!-- Mode Toggle Bubble Buttons -->
+          <button class="btn-control" id="dragToggleBtn" onclick="toggleDragMode()" style="border-color: var(--primary); color: var(--primary);">
+            🔀 Rearrange Sections: OFF
+          </button>
+          <button class="btn-control" onclick="exportActiveTabCSV()">
+            📥 Export Active View (CSV)
+          </button>
+          <button class="btn-control" onclick="exportActiveTabExcel()">
+            📊 Export Active View (Excel)
+          </button>
         </div>
       </div>
 
@@ -585,11 +646,10 @@
       <div id="overview" class="tab-content active">
         <div class="draggable-zone" id="overviewZone">
           
-          <div class="card theme-kpi-zone" draggable="true" data-card-id="ov-kpi">
+          <div class="card theme-kpi-zone" draggable="false" data-card-id="ov-kpi">
             <div class="card-header-bar">
               <h3>📈 Period Overview & Key Metrics</h3>
               <div class="card-action-bar">
-                <button class="btn-export" onclick="exportCardData('ov-kpi', 'Executive_Metrics_Summary')">📥 Export</button>
                 <span class="drag-handle">:: Drag Section</span>
               </div>
             </div>
@@ -631,11 +691,10 @@
           </div>
 
           <!-- SEPARATED BUBBLE 1: TEAM MEMBER ACTIVITY -->
-          <div class="card theme-charts-zone" draggable="true" data-card-id="ov-activity">
+          <div class="card theme-charts-zone" draggable="false" data-card-id="ov-activity">
             <div class="card-header-bar">
               <h3>👥 Team Member Activity</h3>
               <div class="card-action-bar">
-                <button class="btn-export" onclick="exportCardData('ov-activity', 'Team_Member_Activity')">📥 Export</button>
                 <span class="drag-handle">:: Drag Section</span>
               </div>
             </div>
@@ -643,11 +702,10 @@
           </div>
 
           <!-- SEPARATED BUBBLE 2: STATUS BREAKDOWN METERS & TOP 4 RECENT PENDING TICKETS -->
-          <div class="card theme-charts-zone" draggable="true" data-card-id="ov-status">
+          <div class="card theme-charts-zone" draggable="false" data-card-id="ov-status">
             <div class="card-header-bar">
               <h3>📊 Status Breakdown & Pending Highlights</h3>
               <div class="card-action-bar">
-                <button class="btn-export" onclick="exportCardData('ov-status', 'Status_Breakdown_Pending')">📥 Export</button>
                 <span class="drag-handle">:: Drag Section</span>
               </div>
             </div>
@@ -661,11 +719,10 @@
             </div>
           </div>
 
-          <div class="card theme-tables-zone" draggable="true" data-card-id="ov-weekly">
+          <div class="card theme-tables-zone" draggable="false" data-card-id="ov-weekly">
             <div class="card-header-bar">
               <h3>📅 Weekly Ticket Breakdown per Team Member</h3>
               <div class="card-action-bar">
-                <button class="btn-export" onclick="exportTableToCSV('weeklyTable', 'Weekly_Ticket_Breakdown.csv')">📥 Export CSV</button>
                 <span class="drag-handle">:: Drag Section</span>
               </div>
             </div>
@@ -684,11 +741,10 @@
             </div>
           </div>
 
-          <div class="card theme-tables-zone" draggable="true" data-card-id="ov-matrix">
+          <div class="card theme-tables-zone" draggable="false" data-card-id="ov-matrix">
             <div class="card-header-bar">
-              <h3>📋 Request Type Breakdown by WF Team Member</h3>
+              <h3>TYPE OF REQUEST × REQUESTING DEPARTMENT</h3>
               <div class="card-action-bar">
-                <button class="btn-export" onclick="exportTableToCSV('matrixTable', 'Request_Type_Matrix.csv')">📥 Export CSV</button>
                 <span class="drag-handle">:: Drag Section</span>
               </div>
             </div>
@@ -709,7 +765,6 @@
           <div class="card-header-bar">
             <h3>📑 WF Ticketing Data Table</h3>
             <div class="card-action-bar">
-              <button class="btn-export" onclick="exportTableToCSV('fullDataTable', 'WF_Ticketing_Full_Data.csv')">📥 Export CSV</button>
               <span class="drag-handle">:: Drag Section</span>
             </div>
           </div>
@@ -753,11 +808,10 @@
       <div id="teamlead" class="tab-content">
         <div class="draggable-zone" id="teamleadZone">
           
-          <div class="card theme-kpi-zone" draggable="true" data-card-id="tl-kpi">
+          <div class="card theme-kpi-zone" draggable="false" data-card-id="tl-kpi">
             <div class="card-header-bar">
               <h3>👤 Team Lead Overview & Request Insights</h3>
               <div class="card-action-bar">
-                <button class="btn-export" onclick="exportCardData('tl-kpi', 'Team_Lead_Overview')">📥 Export</button>
                 <span class="drag-handle">:: Drag Section</span>
               </div>
             </div>
@@ -789,11 +843,11 @@
             </div>
           </div>
 
-          <div class="card theme-charts-zone" draggable="true" data-card-id="tl-charts">
+          <!-- RENAMED SECTION: Analytics and SLA Trends -->
+          <div class="card theme-charts-zone" draggable="false" data-card-id="tl-charts">
             <div class="card-header-bar">
-              <h3>📊 Visual Analytics & Interactive SLA Trends</h3>
+              <h3>📊 Analytics and SLA Trends</h3>
               <div class="card-action-bar">
-                <button class="btn-export" onclick="exportCardData('tl-charts', 'SLA_Trends')">📥 Export</button>
                 <span class="drag-handle">:: Drag Section</span>
               </div>
             </div>
@@ -807,13 +861,18 @@
                 <div class="chart-container"><canvas id="slaChart"></canvas></div>
               </div>
             </div>
+
+            <!-- 🔥 NEW SLA PERCENTAGE BREAKDOWN CARDS BELOW CHARTS -->
+            <div style="margin-top: 24px; padding-top: 18px; border-top: 1px dashed var(--glass-border);">
+              <h4 style="margin: 0 0 14px 0; font-size: 13px; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em;">⏱️ Comprehensive SLA Compliance Breakdown (%)</h4>
+              <div id="slaPercentageMeters" class="sla-meters-grid"></div>
+            </div>
           </div>
 
-          <div class="card theme-tables-zone" draggable="true" data-card-id="tl-matrix">
+          <div class="card theme-tables-zone" draggable="false" data-card-id="tl-matrix">
             <div class="card-header-bar">
-              <h3>📑 Cross-Tabular Matrix: Request Type × Requesting Department</h3>
+              <h3>TYPE OF REQUEST × REQUESTING DEPARTMENT</h3>
               <div class="card-action-bar">
-                <button class="btn-export" onclick="exportTableToCSV('reqDeptMatrixTable', 'ReqType_vs_Dept_Matrix.csv')">📥 Export CSV</button>
                 <span class="drag-handle">:: Drag Section</span>
               </div>
             </div>
@@ -825,11 +884,10 @@
             </div>
           </div>
 
-          <div class="card theme-tables-zone" draggable="true" data-card-id="tl-performance">
+          <div class="card theme-tables-zone" draggable="false" data-card-id="tl-performance">
             <div class="card-header-bar">
               <h3>📊 Tickets per Team Lead & Trackers (SLA Performance)</h3>
               <div class="card-action-bar">
-                <button class="btn-export" onclick="exportTableToCSV('tlTableBody', 'TeamLead_SLA_Performance.csv')">📥 Export CSV</button>
                 <span class="drag-handle">:: Drag Section</span>
               </div>
             </div>
@@ -854,18 +912,78 @@
         </div>
       </div>
 
+      <!-- 4. 🔥 NEW TAB: MONTHLY SUMMARY -->
+      <div id="monthlySummary" class="tab-content">
+        <div class="draggable-zone" id="summaryZone">
+          
+          <div class="card theme-kpi-zone" draggable="false" data-card-id="ms-trends">
+            <div class="card-header-bar">
+              <h3>📈 High-Level Monthly Trends & Executive Analytics</h3>
+              <div class="card-action-bar">
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
+            </div>
+            
+            <div class="charts-grid">
+              <div>
+                <h4 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-muted);">🗓️ Total Ticket Volume by Month</h4>
+                <div class="chart-container"><canvas id="monthlyVolumeChart"></canvas></div>
+              </div>
+              <div>
+                <h4 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-muted);">📊 Prefilled SLA Rate Trend (%) by Month</h4>
+                <div class="chart-container"><canvas id="monthlySlaTrendChart"></canvas></div>
+              </div>
+            </div>
+
+            <!-- EXECUTIVE DETAILED NOTES -->
+            <div class="monthly-notes-box">
+              <div class="monthly-notes-title">📝 High-Level Executive Analysis & Detailed Notes</div>
+              <ul class="monthly-notes-list" id="executiveAnalysisNotes">
+                <li>Data analysis will compute upon file upload...</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="card theme-tables-zone" draggable="false" data-card-id="ms-table">
+            <div class="card-header-bar">
+              <h3>📊 Monthly Executive Aggregation Matrix</h3>
+              <div class="card-action-bar">
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
+            </div>
+            <div class="table-container">
+              <table id="monthlySummaryTable" style="table-layout: auto;">
+                <thead>
+                  <tr>
+                    <th style="text-align: left;">Month / Period</th>
+                    <th>Total Requests</th>
+                    <th>Active Team Leads</th>
+                    <th>Prefilled (≥4d)</th>
+                    <th>Short Notice</th>
+                    <th>Same Day</th>
+                    <th>Late</th>
+                    <th>SLA Rate (%)</th>
+                  </tr>
+                </thead>
+                <tbody id="monthlySummaryTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   </div>
 
   <script>
     Chart.register(ChartDataLabels);
 
-    const GOOGLE_SHEET_CSV_URL = "https://script.google.com/a/macros/ltvplus.com/s/AKfycbyWV-68IeAHIQQBYIadbZrO9UNZMve7SY8SAyIVhyluXNZiJ0fWqxrm94GhH2UlzhqLJA/exec";
-
     let globalObjects = [];
     let globalHeaders = [];
     let hiddenColumns = new Set();
     let isTextWrapped = false;
+    let isDragModeActive = false;
     
     let activeWFSlicer = '';
     let activeStatusSlicer = '';
@@ -873,6 +991,8 @@
     let wfChartInstance = null;
     let reqTypeChartInstance = null;
     let slaChartInstance = null;
+    let monthlyVolumeChartInstance = null;
+    let monthlySlaTrendChartInstance = null;
 
     const EDITABLE_COLUMNS = {
       'filed in pf': ['Yes', 'No', 'Pending', 'N/A'],
@@ -882,56 +1002,80 @@
     };
 
     window.addEventListener('DOMContentLoaded', () => {
-      fetchGoogleSheetData();
       initDragAndDrop();
     });
 
-    // 🌟 UNIVERSAL CSV / DATA EXPORT FUNCTION
-    function exportTableToCSV(tableIdOrElement, filename) {
-      let table = document.getElementById(tableIdOrElement);
-      if (!table) return;
+    // 🔀 TOGGLE DRAG & DROP MODE ON/OFF
+    function toggleDragMode() {
+      isDragModeActive = !isDragModeActive;
+      const btn = document.getElementById('dragToggleBtn');
+      const body = document.body;
 
-      let csv = [];
-      let rows = table.querySelectorAll("tr");
-      
-      for (let i = 0; i < rows.length; i++) {
-        let row = [], cols = rows[i].querySelectorAll("td, th");
-        for (let j = 0; j < cols.length; j++) {
-          let text = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").replace(/"/g, '""');
-          row.push('"' + text + '"');
-        }
-        csv.push(row.join(","));
+      if (isDragModeActive) {
+        body.classList.add('drag-mode-active');
+        btn.innerText = "💾 Save Layout & Continue";
+        btn.style.background = "var(--primary)";
+        btn.style.color = "#0b0f17";
+        document.querySelectorAll('.card').forEach(c => c.setAttribute('draggable', 'true'));
+      } else {
+        body.classList.remove('drag-mode-active');
+        btn.innerText = "🔀 Rearrange Sections: OFF";
+        btn.style.background = "var(--card-bg-elevated)";
+        btn.style.color = "var(--primary)";
+        document.querySelectorAll('.card').forEach(c => c.setAttribute('draggable', 'false'));
       }
-
-      downloadCSVFile(csv.join("\n"), filename);
     }
 
-    function exportCardData(cardId, filename) {
+    // 🌟 GLOBAL CSV EXPORT FOR ACTIVE VIEW
+    function exportActiveTabCSV() {
       if (globalObjects.length === 0) {
-        alert("No active dataset to export!");
+        alert("Please upload a CSV dataset first!");
         return;
       }
+      const activeTab = document.querySelector('.tab-content.active').id;
       const keys = Object.keys(globalObjects[0]);
       let csvContent = keys.join(",") + "\n";
+      
       globalObjects.forEach(row => {
         let values = keys.map(k => `"${String(row[k] || '').replace(/"/g, '""')}"`);
         csvContent += values.join(",") + "\n";
       });
-      downloadCSVFile(csvContent, `${filename}_Dataset.csv`);
+
+      downloadFile(csvContent, `Workforce_${activeTab}_Export.csv`, "text/csv;charset=utf-8;");
     }
 
-    function downloadCSVFile(csvText, filename) {
-      let csvFile = new Blob([csvText], {type: "text/csv;charset=utf-8;"});
-      let downloadLink = document.createElement("a");
-      downloadLink.download = filename;
-      downloadLink.href = window.URL.createObjectURL(csvFile);
-      downloadLink.style.display = "none";
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
+    // 🌟 GLOBAL EXCEL EXPORT FOR ACTIVE VIEW (.XLS)
+    function exportActiveTabExcel() {
+      if (globalObjects.length === 0) {
+        alert("Please upload a CSV dataset first!");
+        return;
+      }
+      const activeTab = document.querySelector('.tab-content.active').id;
+      const keys = Object.keys(globalObjects[0]);
+      
+      let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Data</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table>';
+      
+      html += '<tr>' + keys.map(k => `<th>${k}</th>`).join('') + '</tr>';
+      globalObjects.forEach(row => {
+        html += '<tr>' + keys.map(k => `<td>${row[k] || ''}</td>`).join('') + '</tr>';
+      });
+      html += '</table></body></html>';
+
+      downloadFile(html, `Workforce_${activeTab}_Export.xls`, "application/vnd.ms-excel;charset=utf-8;");
     }
 
-    // 1. Drag and Drop Reordering Engine with localStorage Persistence
+    function downloadFile(content, filename, contentType) {
+      let blob = new Blob([content], {type: contentType});
+      let link = document.createElement("a");
+      link.download = filename;
+      link.href = window.URL.createObjectURL(blob);
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Drag and Drop Engine
     function initDragAndDrop() {
       const zones = document.querySelectorAll('.draggable-zone');
       zones.forEach(zone => {
@@ -945,6 +1089,7 @@
         }
 
         zone.addEventListener('dragover', e => {
+          if (!isDragModeActive) return;
           e.preventDefault();
           const draggingCard = document.querySelector('.card.dragging');
           if (!draggingCard) return;
@@ -957,8 +1102,10 @@
         });
       });
 
-      document.querySelectorAll('.card[draggable="true"]').forEach(card => {
-        card.addEventListener('dragstart', () => card.classList.add('dragging'));
+      document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('dragstart', () => {
+          if (isDragModeActive) card.classList.add('dragging');
+        });
         card.addEventListener('dragend', () => {
           card.classList.remove('dragging');
           saveDragOrder(card.parentElement);
@@ -967,7 +1114,7 @@
     }
 
     function getDragAfterElement(container, y) {
-      const draggableElements = [...container.querySelectorAll('.card[draggable="true"]:not(.dragging)')];
+      const draggableElements = [...container.querySelectorAll('.card:not(.dragging)')];
       return draggableElements.reduce((closest, child) => {
         const box = child.getBoundingClientRect();
         const offset = y - box.top - box.height / 2;
@@ -985,27 +1132,7 @@
       localStorage.setItem(`dragOrder_${zone.id}`, JSON.stringify(cardIds));
     }
 
-    // 2. Fetch Data Functions
-    function fetchGoogleSheetData() {
-      const statusElement = document.getElementById('dataStatus');
-      if (statusElement) statusElement.innerText = "Refreshing online data...";
-
-      Papa.parse(GOOGLE_SHEET_CSV_URL, {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
-          processParsedData(results.data, results.meta.fields, "Online Stream");
-        },
-        error: function(err) {
-          console.error("Error fetching Google Sheet via Proxy:", err);
-          if (statusElement) {
-            statusElement.innerHTML = `<span style="color:#f43f5e; font-weight:bold;">Failed to sync live data</span>`;
-          }
-        }
-      });
-    }
-
+    // Offline CSV Parsing Handler
     function handleFileUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -1034,7 +1161,7 @@
 
       const statusElement = document.getElementById('dataStatus');
       if (statusElement) {
-        statusElement.innerHTML = `<span style="color:#2dd4bf; font-weight:bold;">Connected (${sourceName})</span> - ${globalObjects.length} records loaded`;
+        statusElement.innerHTML = `<span style="color:#2dd4bf; font-weight:bold;">Loaded ${sourceName}</span> - ${globalObjects.length} records loaded`;
       }
 
       populateMonthDropdowns();
@@ -1043,6 +1170,7 @@
       renderTable();
       renderOverviewMetrics();
       renderTeamLeadAnalytics();
+      renderMonthlySummary();
     }
 
     function changeTheme(themeName) {
@@ -1053,6 +1181,7 @@
       }
       renderOverviewMetrics();
       renderTeamLeadAnalytics();
+      renderMonthlySummary();
     }
 
     function getChartTextColor() {
@@ -1408,7 +1537,6 @@
         return st.includes('pending') || st.includes('open') || st.includes('in progress');
       });
 
-      // Sort by Timestamp (Newest first)
       pendingRows.sort((a, b) => {
         const tsA = new Date(getKeyCaseInsensitive(a, 'Timestamp') || getKeyCaseInsensitive(a, 'Date') || 0);
         const tsB = new Date(getKeyCaseInsensitive(b, 'Timestamp') || getKeyCaseInsensitive(b, 'Date') || 0);
@@ -1473,7 +1601,7 @@
       document.getElementById('matrixBody').innerHTML = rowsHTML;
     }
 
-    // 3. Render Team Lead Analytics with Curved Area Line Charts
+    // 3. Render Team Lead Analytics with Comprehensive SLA % Meters
     function renderTeamLeadAnalytics() {
       const selectedMonth = document.getElementById('tlMonthFilter').value;
       const labelColor = getChartTextColor();
@@ -1543,7 +1671,35 @@
 
       const totalSla = activeDataset.length;
       const prefilledRate = totalSla > 0 ? ((slaCounts['Prefilled'] / totalSla) * 100).toFixed(1) : 0;
+      const shortNoticeRate = totalSla > 0 ? ((slaCounts['Short notice'] / totalSla) * 100).toFixed(1) : 0;
+      const sameDayRate = totalSla > 0 ? ((slaCounts['Same day'] / totalSla) * 100).toFixed(1) : 0;
+      const lateRate = totalSla > 0 ? ((slaCounts['Late'] / totalSla) * 100).toFixed(1) : 0;
+
       document.getElementById('tl-sla-rate').innerText = `${prefilledRate}%`;
+
+      // 🔥 RENDER FULL COMPREHENSIVE SLA METERS (%)
+      document.getElementById('slaPercentageMeters').innerHTML = `
+        <div class="sla-meter-card">
+          <div class="sla-meter-label">Prefilled Rate (≥4d)</div>
+          <div class="sla-meter-value" style="color:#10b981;">${prefilledRate}%</div>
+          <div class="sla-meter-sub" style="color:#34d399;">${slaCounts['Prefilled']} tickets</div>
+        </div>
+        <div class="sla-meter-card">
+          <div class="sla-meter-label">Short Notice (1-3d)</div>
+          <div class="sla-meter-value" style="color:#f59e0b;">${shortNoticeRate}%</div>
+          <div class="sla-meter-sub" style="color:#fbbf24;">${slaCounts['Short notice']} tickets</div>
+        </div>
+        <div class="sla-meter-card">
+          <div class="sla-meter-label">Same Day Rate</div>
+          <div class="sla-meter-value" style="color:#fb923c;">${sameDayRate}%</div>
+          <div class="sla-meter-sub" style="color:#fdba74;">${slaCounts['Same day']} tickets</div>
+        </div>
+        <div class="sla-meter-card">
+          <div class="sla-meter-label">Late Submission</div>
+          <div class="sla-meter-value" style="color:#f43f5e;">${lateRate}%</div>
+          <div class="sla-meter-sub" style="color:#fb7185;">${slaCounts['Late']} tickets</div>
+        </div>
+      `;
 
       // CURVED GRADIENT AREA CHART 1: Request Type Trend
       const topTypesSorted = Object.keys(typeCounts).sort((a,b) => typeCounts[b] - typeCounts[a]).slice(0, 6);
@@ -1631,6 +1787,122 @@
           <td>${tlData[e].td2Yes}</td>
         </tr>
       `).join('');
+    }
+
+    // 4. 🔥 NEW TAB ENGINE: RENDER MONTHLY SUMMARY & TREND ANALYSIS
+    function renderMonthlySummary() {
+      const labelColor = getChartTextColor();
+      const monthlyData = {};
+
+      globalObjects.forEach(row => {
+        let month = getKeyCaseInsensitive(row, 'Month Year') || getKeyCaseInsensitive(row, 'Month - Year');
+        if (!month || !month.trim()) {
+          const ts = getKeyCaseInsensitive(row, 'Timestamp') || getKeyCaseInsensitive(row, 'Date');
+          if (ts) {
+            const d = new Date(ts);
+            if (!isNaN(d.getTime())) month = d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+          }
+        }
+        if (!month) month = 'Unspecified';
+        else month = month.trim();
+
+        if (!monthlyData[month]) {
+          monthlyData[month] = { total: 0, leads: new Set(), prefilled: 0, shortNotice: 0, sameDay: 0, late: 0 };
+        }
+
+        monthlyData[month].total++;
+
+        const email = getFlexibleValue(row, ['Email Address', 'Email', 'Team Lead Email', 'Lead Email']);
+        if (email) monthlyData[month].leads.add(email);
+
+        const leadTime = getFlexibleValue(row, ['Request Lead Time', 'Lead Time', 'SLA Lead Time', 'SLA']).toLowerCase();
+        if (leadTime.includes('prefilled') || leadTime.includes('>=4')) monthlyData[month].prefilled++;
+        else if (leadTime.includes('short') || leadTime.includes('1-3')) monthlyData[month].shortNotice++;
+        else if (leadTime.includes('same day') || leadTime.includes('0 day')) monthlyData[month].sameDay++;
+        else if (leadTime.includes('late')) monthlyData[month].late++;
+        else monthlyData[month].prefilled++;
+      });
+
+      const monthKeys = Object.keys(monthlyData);
+      const volumeList = monthKeys.map(m => monthlyData[m].total);
+      const slaRateList = monthKeys.map(m => {
+        const tot = monthlyData[m].total;
+        return tot > 0 ? parseFloat(((monthlyData[m].prefilled / tot) * 100).toFixed(1)) : 0;
+      });
+
+      // Chart 1: Monthly Volume
+      const ctxVol = document.getElementById('monthlyVolumeChart').getContext('2d');
+      if (monthlyVolumeChartInstance) monthlyVolumeChartInstance.destroy();
+      monthlyVolumeChartInstance = new Chart(ctxVol, {
+        type: 'bar',
+        data: {
+          labels: monthKeys,
+          datasets: [{ label: 'Total Tickets', data: volumeList, backgroundColor: '#38bdf8', borderRadius: 8 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false }, ticks: { color: labelColor } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: labelColor } }
+          },
+          plugins: { legend: { display: false }, datalabels: { display: true, color: '#0b0f17', font: { weight: 'bold' } } }
+        }
+      });
+
+      // Chart 2: SLA Rate Trend Line
+      const ctxSlaTrend = document.getElementById('monthlySlaTrendChart').getContext('2d');
+      if (monthlySlaTrendChartInstance) monthlySlaTrendChartInstance.destroy();
+      monthlySlaTrendChartInstance = new Chart(ctxSlaTrend, {
+        type: 'line',
+        data: {
+          labels: monthKeys,
+          datasets: [{
+            label: 'Prefilled SLA %',
+            data: slaRateList,
+            borderColor: '#10b981',
+            borderWidth: 3,
+            tension: 0.3,
+            pointRadius: 6,
+            pointBackgroundColor: '#10b981'
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false }, ticks: { color: labelColor } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: labelColor }, min: 0, max: 100 }
+          },
+          plugins: { legend: { display: false }, datalabels: { display: true, color: '#ffffff', font: { weight: 'bold' }, formatter: v => `${v}%` } }
+        }
+      });
+
+      // Table Render
+      document.getElementById('monthlySummaryTableBody').innerHTML = monthKeys.map(m => {
+        const d = monthlyData[m];
+        const slaPct = d.total > 0 ? ((d.prefilled / d.total) * 100).toFixed(1) : 0;
+        return `
+          <tr>
+            <td style="text-align: left; font-weight: 700;">🗓️ ${m}</td>
+            <td><b>${d.total}</b></td>
+            <td>${d.leads.size} Leads</td>
+            <td><span style="color:#34d399;">${d.prefilled}</span></td>
+            <td><span style="color:#fbbf24;">${d.shortNotice}</span></td>
+            <td><span style="color:#fdba74;">${d.sameDay}</span></td>
+            <td><span style="color:#fb7185;">${d.late}</span></td>
+            <td><strong style="color:var(--primary);">${slaPct}%</strong></td>
+          </tr>`;
+      }).join('');
+
+      // Generate Detailed Notes
+      const peakMonth = monthKeys.reduce((max, m) => monthlyData[m].total > (monthlyData[max]?.total || 0) ? m : max, monthKeys[0] || '-');
+      const avgSla = slaRateList.length > 0 ? (slaRateList.reduce((a,b)=>a+b,0) / slaRateList.length).toFixed(1) : 0;
+
+      document.getElementById('executiveAnalysisNotes').innerHTML = `
+        <li><strong>Peak Workload Month:</strong> Highest ticket volume recorded in <strong>${peakMonth}</strong> with <strong>${monthlyData[peakMonth]?.total || 0}</strong> total requests.</li>
+        <li><strong>Average Prefilled SLA Compliance:</strong> Overall average prefilled compliance sits at <strong>${avgSla}%</strong> across recorded periods.</li>
+        <li><strong>Lead Engagement:</strong> Active team leads engaged across all months: <strong>${new Set(globalObjects.map(r => getFlexibleValue(r, ['Email Address', 'Email']))).size}</strong> unique team leads.</li>
+        <li><strong>Operational Bottlenecks:</strong> Months with prefilled SLA compliance below 50% should be investigated for capacity constraints or short-notice team lead submissions.</li>
+      `;
     }
 
     function renderReqDeptMatrix(dataset) {
