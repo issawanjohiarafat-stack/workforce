@@ -83,7 +83,7 @@
       min-height: 100vh;
     }
 
-    /* 🍏 COLLAPSIBLE FLOATING SIDEBAR NAVIGATION */
+    /* 🍏 FLOATING COLLAPSIBLE SIDEBAR NAVIGATION */
     .sidebar-nav {
       position: fixed;
       top: 20px;
@@ -258,6 +258,34 @@
       letter-spacing: -0.01em;
     }
 
+    .card-action-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Export Accent Button */
+    .btn-export {
+      background: linear-gradient(135deg, rgba(45, 212, 191, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%);
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-export:hover {
+      background: var(--primary);
+      color: #0b0f17;
+      box-shadow: 0 0 12px var(--primary-glow);
+    }
+
     /* Active Drag Handle */
     .drag-handle { 
       cursor: grab; 
@@ -342,6 +370,74 @@
       height: 100%;
       border-radius: 9999px;
       transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* 🔥 COOL RECENT PENDING TICKETS GLASSCARDS */
+    .pending-tickets-wrapper {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px dashed var(--glass-border);
+    }
+
+    .pending-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent-amber);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .pending-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .pending-card {
+      background: rgba(245, 158, 11, 0.06);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: 12px;
+      padding: 12px 14px;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pending-card:hover {
+      transform: translateY(-3px);
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.5);
+      box-shadow: 0 8px 20px rgba(245, 158, 11, 0.15);
+    }
+
+    .pending-id {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--accent-amber);
+      letter-spacing: 0.05em;
+    }
+
+    .pending-type {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 4px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pending-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 6px;
     }
 
     /* Side-by-Side Slicers */
@@ -492,7 +588,10 @@
           <div class="card theme-kpi-zone" draggable="true" data-card-id="ov-kpi">
             <div class="card-header-bar">
               <h3>📈 Period Overview & Key Metrics</h3>
-              <span class="drag-handle">:: Drag Section</span>
+              <div class="card-action-bar">
+                <button class="btn-export" onclick="exportCardData('ov-kpi', 'Executive_Metrics_Summary')">📥 Export</button>
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
             </div>
             
             <div class="overview-filter-bar">
@@ -526,6 +625,7 @@
               <div class="kpi-card">
                 <div class="kpi-title">Active WF Team Members 🧑‍💻</div>
                 <div class="kpi-value" id="sept-wf-count">0</div>
+                <div class="kpi-subtext" style="color: var(--primary); font-weight: 600;">⚡ 4 FT & 1 PT staff</div>
               </div>
             </div>
           </div>
@@ -534,24 +634,40 @@
           <div class="card theme-charts-zone" draggable="true" data-card-id="ov-activity">
             <div class="card-header-bar">
               <h3>👥 Team Member Activity</h3>
-              <span class="drag-handle">:: Drag Section</span>
+              <div class="card-action-bar">
+                <button class="btn-export" onclick="exportCardData('ov-activity', 'Team_Member_Activity')">📥 Export</button>
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
             </div>
             <div class="chart-container"><canvas id="wfTeamChart"></canvas></div>
           </div>
 
-          <!-- SEPARATED BUBBLE 2: STATUS BREAKDOWN METERS -->
+          <!-- SEPARATED BUBBLE 2: STATUS BREAKDOWN METERS & TOP 4 RECENT PENDING TICKETS -->
           <div class="card theme-charts-zone" draggable="true" data-card-id="ov-status">
             <div class="card-header-bar">
-              <h3>📊 Status Breakdown & Distribution Meters</h3>
-              <span class="drag-handle">:: Drag Section</span>
+              <h3>📊 Status Breakdown & Pending Highlights</h3>
+              <div class="card-action-bar">
+                <button class="btn-export" onclick="exportCardData('ov-status', 'Status_Breakdown_Pending')">📥 Export</button>
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
             </div>
+            
             <div id="statusMetersContainer" class="status-meter-container"></div>
+
+            <!-- 🔥 TOP 4 RECENT PENDING TICKETS SECTION -->
+            <div class="pending-tickets-wrapper">
+              <div class="pending-title">⏳ Top 4 Recent Pending Requests (By Timestamp)</div>
+              <div id="recentPendingGrid" class="pending-grid"></div>
+            </div>
           </div>
 
           <div class="card theme-tables-zone" draggable="true" data-card-id="ov-weekly">
             <div class="card-header-bar">
               <h3>📅 Weekly Ticket Breakdown per Team Member</h3>
-              <span class="drag-handle">:: Drag Section</span>
+              <div class="card-action-bar">
+                <button class="btn-export" onclick="exportTableToCSV('weeklyTable', 'Weekly_Ticket_Breakdown.csv')">📥 Export CSV</button>
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
             </div>
             <div class="weekly-container">
               <table class="weekly-table" id="weeklyTable" style="table-layout: auto;">
@@ -571,7 +687,10 @@
           <div class="card theme-tables-zone" draggable="true" data-card-id="ov-matrix">
             <div class="card-header-bar">
               <h3>📋 Request Type Breakdown by WF Team Member</h3>
-              <span class="drag-handle">:: Drag Section</span>
+              <div class="card-action-bar">
+                <button class="btn-export" onclick="exportTableToCSV('matrixTable', 'Request_Type_Matrix.csv')">📥 Export CSV</button>
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
             </div>
             <div class="matrix-container">
               <table id="matrixTable" style="table-layout: auto;">
@@ -589,7 +708,10 @@
         <div class="card">
           <div class="card-header-bar">
             <h3>📑 WF Ticketing Data Table</h3>
-            <span class="drag-handle">:: Drag Section</span>
+            <div class="card-action-bar">
+              <button class="btn-export" onclick="exportTableToCSV('fullDataTable', 'WF_Ticketing_Full_Data.csv')">📥 Export CSV</button>
+              <span class="drag-handle">:: Drag Section</span>
+            </div>
           </div>
 
           <div class="slicers-container">
@@ -634,7 +756,10 @@
           <div class="card theme-kpi-zone" draggable="true" data-card-id="tl-kpi">
             <div class="card-header-bar">
               <h3>👤 Team Lead Overview & Request Insights</h3>
-              <span class="drag-handle">:: Drag Section</span>
+              <div class="card-action-bar">
+                <button class="btn-export" onclick="exportCardData('tl-kpi', 'Team_Lead_Overview')">📥 Export</button>
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
             </div>
             
             <div class="overview-filter-bar">
@@ -664,11 +789,13 @@
             </div>
           </div>
 
-          <!-- UPGRADED VISUAL ANALYTICS: CURVED AREA GRADIENT CHARTS -->
           <div class="card theme-charts-zone" draggable="true" data-card-id="tl-charts">
             <div class="card-header-bar">
               <h3>📊 Visual Analytics & Interactive SLA Trends</h3>
-              <span class="drag-handle">:: Drag Section</span>
+              <div class="card-action-bar">
+                <button class="btn-export" onclick="exportCardData('tl-charts', 'SLA_Trends')">📥 Export</button>
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
             </div>
             <div class="charts-grid">
               <div>
@@ -685,7 +812,10 @@
           <div class="card theme-tables-zone" draggable="true" data-card-id="tl-matrix">
             <div class="card-header-bar">
               <h3>📑 Cross-Tabular Matrix: Request Type × Requesting Department</h3>
-              <span class="drag-handle">:: Drag Section</span>
+              <div class="card-action-bar">
+                <button class="btn-export" onclick="exportTableToCSV('reqDeptMatrixTable', 'ReqType_vs_Dept_Matrix.csv')">📥 Export CSV</button>
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
             </div>
             <div class="matrix-container">
               <table id="reqDeptMatrixTable" style="table-layout: auto;">
@@ -698,7 +828,10 @@
           <div class="card theme-tables-zone" draggable="true" data-card-id="tl-performance">
             <div class="card-header-bar">
               <h3>📊 Tickets per Team Lead & Trackers (SLA Performance)</h3>
-              <span class="drag-handle">:: Drag Section</span>
+              <div class="card-action-bar">
+                <button class="btn-export" onclick="exportTableToCSV('tlTableBody', 'TeamLead_SLA_Performance.csv')">📥 Export CSV</button>
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
             </div>
             <div class="table-container" style="max-height: 400px;">
               <table style="table-layout: auto;">
@@ -752,6 +885,51 @@
       fetchGoogleSheetData();
       initDragAndDrop();
     });
+
+    // 🌟 UNIVERSAL CSV / DATA EXPORT FUNCTION
+    function exportTableToCSV(tableIdOrElement, filename) {
+      let table = document.getElementById(tableIdOrElement);
+      if (!table) return;
+
+      let csv = [];
+      let rows = table.querySelectorAll("tr");
+      
+      for (let i = 0; i < rows.length; i++) {
+        let row = [], cols = rows[i].querySelectorAll("td, th");
+        for (let j = 0; j < cols.length; j++) {
+          let text = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").replace(/"/g, '""');
+          row.push('"' + text + '"');
+        }
+        csv.push(row.join(","));
+      }
+
+      downloadCSVFile(csv.join("\n"), filename);
+    }
+
+    function exportCardData(cardId, filename) {
+      if (globalObjects.length === 0) {
+        alert("No active dataset to export!");
+        return;
+      }
+      const keys = Object.keys(globalObjects[0]);
+      let csvContent = keys.join(",") + "\n";
+      globalObjects.forEach(row => {
+        let values = keys.map(k => `"${String(row[k] || '').replace(/"/g, '""')}"`);
+        csvContent += values.join(",") + "\n";
+      });
+      downloadCSVFile(csvContent, `${filename}_Dataset.csv`);
+    }
+
+    function downloadCSVFile(csvText, filename) {
+      let csvFile = new Blob([csvText], {type: "text/csv;charset=utf-8;"});
+      let downloadLink = document.createElement("a");
+      downloadLink.download = filename;
+      downloadLink.href = window.URL.createObjectURL(csvFile);
+      downloadLink.style.display = "none";
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    }
 
     // 1. Drag and Drop Reordering Engine with localStorage Persistence
     function initDragAndDrop() {
@@ -1199,6 +1377,9 @@
 
       document.getElementById('statusMetersContainer').innerHTML = metersHTML || '<div style="color:var(--text-muted); font-size:13px;">No status records found</div>';
 
+      // ⏳ COMPILE & RENDER TOP 4 RECENT PENDING TICKETS BY TIMESTAMP
+      renderTop4PendingTickets(globalObjects);
+
       const numTarget = parseFloat(targetCapacity) || 0;
       document.getElementById('weeklyTableBody').innerHTML = members.map(m => {
         const w = wfWeeklyData[m];
@@ -1218,6 +1399,46 @@
       }).join('');
 
       renderMatrixTable(activeDataset);
+    }
+
+    // 🔥 Top 4 Pending Tickets Compiler (Sorted by Timestamp)
+    function renderTop4PendingTickets(dataset) {
+      const pendingRows = dataset.filter(row => {
+        const st = (getKeyCaseInsensitive(row, 'STATUS') || '').toLowerCase();
+        return st.includes('pending') || st.includes('open') || st.includes('in progress');
+      });
+
+      // Sort by Timestamp (Newest first)
+      pendingRows.sort((a, b) => {
+        const tsA = new Date(getKeyCaseInsensitive(a, 'Timestamp') || getKeyCaseInsensitive(a, 'Date') || 0);
+        const tsB = new Date(getKeyCaseInsensitive(b, 'Timestamp') || getKeyCaseInsensitive(b, 'Date') || 0);
+        return tsB - tsA;
+      });
+
+      const top4 = pendingRows.slice(0, 4);
+      const gridContainer = document.getElementById('recentPendingGrid');
+
+      if (top4.length === 0) {
+        gridContainer.innerHTML = `<div style="grid-column: span 4; color: var(--text-muted); font-size: 12px;">No pending tickets found.</div>`;
+        return;
+      }
+
+      gridContainer.innerHTML = top4.map(row => {
+        const ticketId = getFlexibleValue(row, ['Ticket ID', 'ID', 'Ticket#', 'Ticket Number']) || '#PENDING';
+        const reqType = getFlexibleValue(row, ['TYPE OF REQUEST', 'Request Type', 'Type']) || 'General Request';
+        const wfMember = getKeyCaseInsensitive(row, 'WF') || 'Unassigned';
+        const rawTs = getKeyCaseInsensitive(row, 'Timestamp') || getKeyCaseInsensitive(row, 'Date') || 'Recent';
+
+        return `
+          <div class="pending-card">
+            <div class="pending-id">${ticketId}</div>
+            <div class="pending-type" title="${reqType}">${reqType}</div>
+            <div class="pending-meta">
+              <span>🧑‍💻 ${wfMember}</span>
+              <span>🕒 ${rawTs.split(' ')[0]}</span>
+            </div>
+          </div>`;
+      }).join('');
     }
 
     function renderMatrixTable(dataset) {
@@ -1392,7 +1613,7 @@
           },
           plugins: { 
             legend: { display: false }, 
-            datalabels: { display: true, color: '#ffffff', font: { weight: 'bold' }, align: 'top', formatter: v => v > 0 ? v : '' } 
+            datalabels: { display: true, color: '#ffffff', font: { weight: 'bold' }, formatter: v => v > 0 ? v : '' } 
           } 
         }
       });
