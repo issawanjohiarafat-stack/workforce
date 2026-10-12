@@ -16,75 +16,60 @@
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
   <style>
-    /* --- 🎨 MODERN DARK/OBSIDIAN THEME SYSTEM --- */
+    /* --- 🍏 APPLE GLASSMORPHISM & OBSIDIAN THEME SYSTEM --- */
     
     :root {
-      /* Obsidian Deep Dark Base */
       --bg-color: #0b0f17;
-      --card-bg: #151c2c;
-      --card-bg-elevated: #1a233a;
+      --card-bg: rgba(21, 28, 44, 0.65);
+      --card-bg-elevated: rgba(26, 35, 58, 0.75);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --glass-glow: rgba(45, 212, 191, 0.15);
+      
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
-      --border-color: rgba(255, 255, 255, 0.08);
-      --border-focus: rgba(45, 212, 191, 0.3);
       
-      /* Neon Mint / Teal Primary Accents */
       --primary: #2dd4bf;
       --primary-hover: #14b8a6;
-      --primary-glow: rgba(45, 212, 191, 0.2);
+      --primary-glow: rgba(45, 212, 191, 0.25);
       --accent-green: #10b981;
       --accent-amber: #f59e0b;
       --accent-rose: #f43f5e;
       
-      --bg-theme-kpi: #151c2c;
-      --bg-theme-charts: #151c2c;
-      --bg-theme-tables: #151c2c;
-      --table-header-bg: #1e293b;
-      --drag-bg: #1e293b;
+      --table-header-bg: rgba(30, 41, 59, 0.85);
+      --drag-bg: rgba(30, 41, 59, 0.8);
+      --sidebar-width-collapsed: 68px;
+      --sidebar-width-expanded: 240px;
     }
 
-    /* 🌙 Dark Mode Theme (Override) */
     [data-theme="dark"] {
       --bg-color: #070a0f;
-      --card-bg: #0f172a;
-      --card-bg-elevated: #1e293b;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --border-color: rgba(255, 255, 255, 0.06);
+      --card-bg: rgba(15, 23, 42, 0.65);
+      --card-bg-elevated: rgba(30, 41, 59, 0.75);
       --primary: #38bdf8;
-      --primary-hover: #0284c7;
-      --primary-glow: rgba(56, 189, 248, 0.2);
+      --primary-glow: rgba(56, 189, 248, 0.25);
     }
 
-    /* 🌊 Ocean Blue Theme (Override) */
     [data-theme="ocean"] {
       --bg-color: #061826;
-      --card-bg: #0b253a;
-      --card-bg-elevated: #103450;
-      --text-main: #f0f9ff;
-      --text-muted: #7dd3fc;
-      --border-color: rgba(56, 189, 248, 0.15);
+      --card-bg: rgba(11, 37, 58, 0.65);
+      --card-bg-elevated: rgba(16, 52, 80, 0.75);
       --primary: #00f2fe;
-      --primary-hover: #4facfe;
       --primary-glow: rgba(0, 242, 254, 0.25);
     }
 
-    /* ☀️ Default Light Mode Theme (Override) */
     [data-theme="light"] {
       --bg-color: #f8fafc;
-      --card-bg: #ffffff;
-      --card-bg-elevated: #f1f5f9;
+      --card-bg: rgba(255, 255, 255, 0.8);
+      --card-bg-elevated: rgba(241, 245, 249, 0.9);
+      --glass-border: rgba(0, 0, 0, 0.08);
       --text-main: #0f172a;
       --text-muted: #64748b;
-      --border-color: #e2e8f0;
       --primary: #0d9488;
-      --primary-hover: #0f766e;
       --primary-glow: rgba(13, 148, 136, 0.15);
-      --table-header-bg: #f1f5f9;
+      --table-header-bg: rgba(241, 245, 249, 0.9);
       --drag-bg: #e2e8f0;
     }
 
-    /* Base Typography & Canvas Setup */
     * { box-sizing: border-box; }
     body { 
       font-family: 'Inter', system-ui, -apple-system, sans-serif; 
@@ -94,105 +79,177 @@
       color: var(--text-main); 
       transition: background-color 0.3s ease, color 0.3s ease; 
       -webkit-font-smoothing: antialiased;
+      display: flex;
+      min-height: 100vh;
     }
-    
-    /* Executive Top Navigation Header */
-    .navbar { 
-      background: rgba(15, 23, 42, 0.8); 
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      padding: 12px 28px; 
-      display: flex; 
-      align-items: center; 
-      justify-content: space-between; 
-      color: white; 
-      border-bottom: 1px solid var(--border-color);
-      position: sticky;
-      top: 0;
-      z-index: 100;
+
+    /* 🍏 COLLAPSIBLE FLOATING SIDEBAR NAVIGATION */
+    .sidebar-nav {
+      position: fixed;
+      top: 20px;
+      left: 16px;
+      height: calc(100vh - 40px);
+      width: var(--sidebar-width-collapsed);
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 16px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      z-index: 1000;
+      transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s ease;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
     }
-    .navbar h2 {
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      margin: 0;
+
+    .sidebar-nav:hover {
+      width: var(--sidebar-width-expanded);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px var(--glass-glow);
+    }
+
+    .sidebar-header {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 14px;
+      padding: 6px 8px;
+      white-space: nowrap;
+    }
+
+    .sidebar-logo-icon {
+      font-size: 22px;
+      min-width: 32px;
+      text-align: center;
+    }
+
+    .sidebar-title {
+      font-size: 15px;
+      font-weight: 800;
       background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      opacity: 0;
+      transition: opacity 0.25s ease;
     }
-    
-    /* Pill-Shaped Navigation Tabs */
-    .nav-tabs { 
-      display: flex; 
-      gap: 6px; 
-      background: rgba(0, 0, 0, 0.3);
-      padding: 4px;
-      border-radius: 9999px;
-      border: 1px solid var(--border-color);
+
+    .sidebar-nav:hover .sidebar-title {
+      opacity: 1;
     }
-    .tab-btn { 
-      background: transparent; 
-      border: none; 
-      color: var(--text-muted); 
-      padding: 8px 18px; 
-      font-size: 13px; 
-      font-weight: 600; 
-      cursor: pointer; 
-      border-radius: 9999px;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    .nav-tabs-vertical {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
     }
-    .tab-btn:hover { color: var(--text-main); }
-    .tab-btn.active { 
-      color: #0b0f17; 
-      background: var(--primary); 
-      box-shadow: 0 0 16px var(--primary-glow); 
+
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 12px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      white-space: nowrap;
+      transition: all 0.25s ease;
+    }
+
+    .tab-btn .tab-icon {
+      font-size: 18px;
+      min-width: 24px;
+      text-align: center;
+    }
+
+    .tab-btn .tab-label {
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .sidebar-nav:hover .tab-btn .tab-label {
+      opacity: 1;
+    }
+
+    .tab-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: #0b0f17;
       font-weight: 700;
+      box-shadow: 0 0 20px var(--primary-glow);
     }
-    
-    .container { padding: 24px; max-width: 1600px; margin: 0 auto; }
+
+    /* Main Canvas Layout */
+    .main-wrapper {
+      margin-left: calc(var(--sidebar-width-collapsed) + 24px);
+      flex: 1;
+      padding: 24px 32px;
+      max-width: 1600px;
+      transition: margin-left 0.35s ease;
+    }
+
+    .container { width: 100%; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* Live Data Connection Banner */
+    /* Glass Status Banner */
     .status-bar { 
       background: var(--card-bg); 
-      border: 1px solid var(--border-color); 
-      padding: 14px 20px; 
-      border-radius: 12px; 
-      margin-bottom: 20px; 
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border); 
+      padding: 14px 22px; 
+      border-radius: 18px; 
+      margin-bottom: 24px; 
       display: flex; 
       align-items: center; 
       justify-content: space-between; 
       font-size: 13px; 
       color: var(--text-main);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    .status-actions {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .draggable-zone { display: flex; flex-direction: column; gap: 24px; }
-    
-    /* Glassmorphism Container Cards */
-    .card { 
-      background: var(--card-bg); 
-      padding: 22px; 
-      border-radius: 16px; 
-      border: 1px solid var(--border-color); 
-      position: relative; 
-      transition: border-color 0.3s ease, box-shadow 0.3s ease;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
     }
-    .card:hover {
-      border-color: var(--border-focus);
+
+    .status-actions { display: flex; gap: 10px; align-items: center; }
+
+    .draggable-zone { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 24px; 
     }
-    .card-header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+
+    /* Apple Frosted Glass Containers */
+    .card { 
+      background: var(--card-bg); 
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 24px; 
+      border-radius: 20px; 
+      border: 1px solid var(--glass-border); 
+      position: relative; 
+      transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .card.dragging {
+      opacity: 0.4;
+      border: 2px dashed var(--primary);
+    }
+
+    .card:hover {
+      border-color: rgba(45, 212, 191, 0.35);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 20px var(--glass-glow);
+    }
+
+    .card-header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
     .card-header-bar h3 { 
       margin: 0; 
       font-size: 16px; 
@@ -200,26 +257,31 @@
       color: var(--text-main); 
       letter-spacing: -0.01em;
     }
+
+    /* Active Drag Handle */
     .drag-handle { 
       cursor: grab; 
       font-size: 11px; 
       font-weight: 700; 
       color: var(--text-muted); 
       background: var(--drag-bg); 
-      padding: 4px 10px; 
-      border-radius: 6px; 
+      padding: 5px 12px; 
+      border-radius: 8px; 
       user-select: none; 
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--glass-border);
       letter-spacing: 0.05em;
       text-transform: uppercase;
+      transition: background 0.2s ease;
     }
+
+    .drag-handle:active { cursor: grabbing; background: var(--primary); color: #0b0f17; }
 
     .overview-filter-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 14px; }
     .overview-filter-bar label { font-weight: 600; font-size: 13px; color: var(--text-muted); }
     .overview-filter-bar select { 
       padding: 8px 16px; 
-      border: 1px solid var(--border-color); 
-      border-radius: 8px; 
+      border: 1px solid var(--glass-border); 
+      border-radius: 10px; 
       font-size: 13px; 
       font-weight: 600; 
       color: var(--text-main); 
@@ -227,64 +289,79 @@
       outline: none;
       transition: all 0.2s ease;
     }
-    .overview-filter-bar select:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 10px var(--primary-glow);
-    }
 
-    /* Big-Number Executive KPI Cards */
-    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    /* Big-Number KPI Cards */
+    .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
     .kpi-card { 
       background: var(--card-bg-elevated); 
-      padding: 18px 20px; 
-      border-radius: 12px; 
-      border: 1px solid var(--border-color); 
+      padding: 20px 22px; 
+      border-radius: 16px; 
+      border: 1px solid var(--glass-border); 
       transition: transform 0.2s ease;
     }
-    .kpi-card:hover { transform: translateY(-2px); }
+    .kpi-card:hover { transform: translateY(-3px); }
     .kpi-title { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; }
-    .kpi-value { font-size: 28px; font-weight: 800; margin-top: 6px; color: var(--text-main); letter-spacing: -0.02em; }
+    .kpi-value { font-size: 30px; font-weight: 800; margin-top: 6px; color: var(--text-main); letter-spacing: -0.02em; }
     .kpi-subtext { font-size: 12px; color: var(--text-muted); margin-top: 6px; font-weight: 500; }
 
     .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .chart-container { position: relative; height: 260px; width: 100%; }
 
-    .status-container { display: flex; align-items: center; gap: 16px; background: var(--card-bg-elevated); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); }
-    .status-chart-area { flex: 2; position: relative; height: 220px; }
-    .status-legend-box { 
-      flex: 1; 
-      background: var(--card-bg); 
-      border: 1px solid var(--border-color); 
-      border-radius: 10px; 
-      padding: 12px; 
-      display: flex; 
-      flex-direction: column; 
-      gap: 8px; 
-      max-height: 220px; 
-      overflow-y: auto; 
-      color: var(--text-main); 
+    /* Interactive Status Progress Meters */
+    .status-meter-container {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 10px 0;
     }
-    .legend-row { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 600; padding: 6px 8px; border-radius: 6px; background: rgba(255, 255, 255, 0.02); }
-    .legend-badge { width: 10px; height: 10px; border-radius: 3px; display: inline-block; margin-right: 8px; }
 
-    /* Side-by-Side Modern Slicers */
+    .status-meter-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .status-meter-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .status-meter-bar-bg {
+      height: 10px;
+      width: 100%;
+      background: var(--card-bg-elevated);
+      border-radius: 9999px;
+      overflow: hidden;
+      border: 1px solid var(--glass-border);
+    }
+
+    .status-meter-bar-fill {
+      height: 100%;
+      border-radius: 9999px;
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Side-by-Side Slicers */
     .slicers-container { display: flex; gap: 16px; margin-bottom: 16px; }
-    .slicer-card { flex: 1; background: var(--card-bg-elevated); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; }
-    .slicer-title { font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
-    .slicer-items { display: flex; flex-wrap: wrap; gap: 8px; max-height: 110px; overflow-y: auto; }
+    .slicer-card { flex: 1; background: var(--card-bg-elevated); border: 1px solid var(--glass-border); border-radius: 14px; padding: 16px; }
+    .slicer-title { font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .slicer-items { display: flex; flex-wrap: wrap; gap: 8px; max-height: 120px; overflow-y: auto; }
     .slicer-btn { 
       font-size: 12px; 
       font-weight: 600; 
       padding: 6px 14px; 
       border-radius: 9999px; 
-      border: 1px solid var(--border-color); 
+      border: 1px solid var(--glass-border); 
       background: var(--card-bg); 
       color: var(--text-muted); 
       cursor: pointer; 
       transition: all 0.2s ease;
     }
-    .slicer-btn:hover { background: var(--border-color); color: var(--text-main); }
-    .slicer-btn.active { background: var(--primary); color: #0b0f17; border-color: var(--primary); font-weight: 700; box-shadow: 0 0 10px var(--primary-glow); }
+    .slicer-btn:hover { background: var(--glass-border); color: var(--text-main); }
+    .slicer-btn.active { background: var(--primary); color: #0b0f17; border-color: var(--primary); font-weight: 700; box-shadow: 0 0 12px var(--primary-glow); }
 
     /* Controls & Modals */
     .table-controls { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
@@ -292,8 +369,8 @@
     .controls-group-right { display: flex; gap: 12px; position: relative; }
     .table-controls input, .btn-control { 
       padding: 9px 16px; 
-      border: 1px solid var(--border-color); 
-      border-radius: 8px; 
+      border: 1px solid var(--glass-border); 
+      border-radius: 10px; 
       font-size: 13px; 
       background: var(--card-bg-elevated); 
       color: var(--text-main); 
@@ -302,19 +379,19 @@
     }
     .table-controls input:focus { border-color: var(--primary); }
     .btn-control { cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-    .btn-control:hover { border-color: var(--primary); background: rgba(255, 255, 255, 0.05); }
+    .btn-control:hover { border-color: var(--primary); background: rgba(255, 255, 255, 0.08); }
 
     .column-popover {
-      display: none; position: absolute; top: 46px; right: 0; background: var(--card-bg-elevated); border: 1px solid var(--border-color);
-      border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); padding: 16px; z-index: 100; min-width: 220px; max-height: 320px; overflow-y: auto; color: var(--text-main);
+      display: none; position: absolute; top: 46px; right: 0; background: var(--card-bg-elevated); border: 1px solid var(--glass-border);
+      border-radius: 14px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); padding: 16px; z-index: 100; min-width: 220px; max-height: 320px; overflow-y: auto; color: var(--text-main);
     }
     .column-popover.active { display: block; }
     .column-option { display: flex; align-items: center; gap: 10px; font-size: 13px; padding: 6px 0; cursor: pointer; }
 
     .table-container, .weekly-container, .matrix-container { 
       overflow-x: auto; 
-      border: 1px solid var(--border-color); 
-      border-radius: 12px; 
+      border: 1px solid var(--glass-border); 
+      border-radius: 14px; 
       background: var(--card-bg-elevated); 
     }
     .table-container { max-height: 550px; }
@@ -330,15 +407,14 @@
       padding: 12px 14px; 
       text-align: center; 
       font-weight: 700; 
-      border: 1px solid var(--border-color); 
+      border: 1px solid var(--glass-border); 
       z-index: 10; 
       width: 140px; 
       color: var(--text-main); 
-      letter-spacing: -0.01em;
     }
     td { 
       padding: 10px 14px; 
-      border: 1px solid var(--border-color); 
+      border: 1px solid var(--glass-border); 
       text-align: center; 
       width: 140px; 
       text-overflow: ellipsis; 
@@ -349,7 +425,7 @@
     .editable-select, .editable-datetime { 
       width: 100%; 
       padding: 6px 8px; 
-      border: 1px solid var(--border-color); 
+      border: 1px solid var(--glass-border); 
       border-radius: 6px; 
       font-size: 12px; 
       background-color: var(--card-bg); 
@@ -358,7 +434,7 @@
       outline: none;
     }
 
-    .badge-target { padding: 4px 10px; border-radius: 9999px; font-weight: 700; font-size: 11px; display: inline-block; letter-spacing: 0.02em; }
+    .badge-target { padding: 4px 10px; border-radius: 9999px; font-weight: 700; font-size: 11px; display: inline-block; }
     .badge-hit { background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
     .badge-near { background-color: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
     .badge-below { background-color: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
@@ -371,274 +447,286 @@
 </head>
 <body>
 
-  <div class="navbar">
-    <h2>📂 Workforce Analytics Portal</h2>
-    <div class="nav-tabs">
-      <button class="tab-btn active" onclick="switchTab('overview', event)">📊 Executive Overview</button>
-      <button class="tab-btn" onclick="switchTab('ticketing', event)">📑 WF Ticketing Data</button>
-      <button class="tab-btn" onclick="switchTab('teamlead', event)">👥 Team Lead Analytics</button>
+  <!-- 🍏 FLOATING COLLAPSIBLE SIDEBAR NAVIGATION -->
+  <aside class="sidebar-nav">
+    <div class="sidebar-header">
+      <span class="sidebar-logo-icon">📂</span>
+      <span class="sidebar-title">Workforce</span>
     </div>
-  </div>
-
-  <div class="container">
-
-    <!-- Live Google Sheets Data Stream Bar & Offline Upload Controls -->
-    <div class="status-bar">
-      <div>
-        <strong>🌐 Live Data Stream:</strong> <span id="dataStatus">Connecting to Google Sheets Proxy...</span>
-      </div>
-      <div class="status-actions">
-        <!-- Hidden file input triggered by custom button -->
-        <input type="file" id="offlineFileInput" accept=".csv" style="display: none;" onchange="handleFileUpload(event)">
-        <button class="btn-control" onclick="document.getElementById('offlineFileInput').click()">📂 Upload Local CSV</button>
-        <button class="btn-control" onclick="fetchGoogleSheetData()">🔄 Sync Live Sheet</button>
-      </div>
+    <div class="nav-tabs-vertical">
+      <button class="tab-btn active" onclick="switchTab('overview', event)">
+        <span class="tab-icon">📊</span>
+        <span class="tab-label">Executive Overview</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('ticketing', event)">
+        <span class="tab-icon">📑</span>
+        <span class="tab-label">WF Ticketing Data</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('teamlead', event)">
+        <span class="tab-icon">👥</span>
+        <span class="tab-label">Team Lead Analytics</span>
+      </button>
     </div>
+  </aside>
 
-    <!-- 1. OVERVIEW TAB -->
-    <div id="overview" class="tab-content active">
-      <div class="draggable-zone">
-        
-        <div class="card theme-kpi-zone">
+  <!-- MAIN DASHBOARD CONTENT CANVAS -->
+  <div class="main-wrapper">
+    <div class="container">
+
+      <!-- Live Data Connection Banner -->
+      <div class="status-bar">
+        <div>
+          <strong>🌐 Live Data Stream:</strong> <span id="dataStatus">Connecting to Google Sheets Proxy...</span>
+        </div>
+        <div class="status-actions">
+          <input type="file" id="offlineFileInput" accept=".csv" style="display: none;" onchange="handleFileUpload(event)">
+          <button class="btn-control" onclick="document.getElementById('offlineFileInput').click()">📂 Upload Local CSV</button>
+          <button class="btn-control" onclick="fetchGoogleSheetData()">🔄 Sync Live Sheet</button>
+        </div>
+      </div>
+
+      <!-- 1. OVERVIEW TAB -->
+      <div id="overview" class="tab-content active">
+        <div class="draggable-zone" id="overviewZone">
+          
+          <div class="card theme-kpi-zone" draggable="true" data-card-id="ov-kpi">
+            <div class="card-header-bar">
+              <h3>📈 Period Overview & Key Metrics</h3>
+              <span class="drag-handle">:: Drag Section</span>
+            </div>
+            
+            <div class="overview-filter-bar">
+              <div>
+                <label for="monthFilter">🗓️ Select Period / Month:</label>
+                <select id="monthFilter" onchange="renderOverviewMetrics()">
+                  <option value="ALL">All Months (Year-to-Date)</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="themeSelect">🎨 Select Theme:</label>
+                <select id="themeSelect" onchange="changeTheme(this.value)">
+                  <option value="dark">🌌 Obsidian Dark (Default)</option>
+                  <option value="ocean">🌊 Ocean Blue</option>
+                  <option value="light">☀️ Default Light</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="kpi-grid">
+              <div class="kpi-card">
+                <div class="kpi-title"><span id="kpi-month-label">Selected Month</span> Total Requests 🎟️</div>
+                <div class="kpi-value" id="sept-total">0</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-title">Avg Target / Capacity 📈</div>
+                <div class="kpi-value" id="sept-avg-capacity">0</div>
+                <div class="kpi-subtext">Target per member (4.5 FTE capacity)</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-title">Active WF Team Members 🧑‍💻</div>
+                <div class="kpi-value" id="sept-wf-count">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SEPARATED BUBBLE 1: TEAM MEMBER ACTIVITY -->
+          <div class="card theme-charts-zone" draggable="true" data-card-id="ov-activity">
+            <div class="card-header-bar">
+              <h3>👥 Team Member Activity</h3>
+              <span class="drag-handle">:: Drag Section</span>
+            </div>
+            <div class="chart-container"><canvas id="wfTeamChart"></canvas></div>
+          </div>
+
+          <!-- SEPARATED BUBBLE 2: STATUS BREAKDOWN METERS -->
+          <div class="card theme-charts-zone" draggable="true" data-card-id="ov-status">
+            <div class="card-header-bar">
+              <h3>📊 Status Breakdown & Distribution Meters</h3>
+              <span class="drag-handle">:: Drag Section</span>
+            </div>
+            <div id="statusMetersContainer" class="status-meter-container"></div>
+          </div>
+
+          <div class="card theme-tables-zone" draggable="true" data-card-id="ov-weekly">
+            <div class="card-header-bar">
+              <h3>📅 Weekly Ticket Breakdown per Team Member</h3>
+              <span class="drag-handle">:: Drag Section</span>
+            </div>
+            <div class="weekly-container">
+              <table class="weekly-table" id="weeklyTable" style="table-layout: auto;">
+                <thead>
+                  <tr>
+                    <th style="text-align: left;">Team Member</th>
+                    <th>Week 1</th><th>Week 2</th><th>Week 3</th><th>Week 4</th><th>Week 5</th>
+                    <th>Total Tickets</th>
+                    <th>Target Status 🎯</th>
+                  </tr>
+                </thead>
+                <tbody id="weeklyTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card theme-tables-zone" draggable="true" data-card-id="ov-matrix">
+            <div class="card-header-bar">
+              <h3>📋 Request Type Breakdown by WF Team Member</h3>
+              <span class="drag-handle">:: Drag Section</span>
+            </div>
+            <div class="matrix-container">
+              <table id="matrixTable" style="table-layout: auto;">
+                <thead id="matrixHeader"></thead>
+                <tbody id="matrixBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 2. TICKETING TAB -->
+      <div id="ticketing" class="tab-content">
+        <div class="card">
           <div class="card-header-bar">
-            <h3>📈 Period Overview & Key Metrics</h3>
+            <h3>📑 WF Ticketing Data Table</h3>
             <span class="drag-handle">:: Drag Section</span>
           </div>
+
+          <div class="slicers-container">
+            <div class="slicer-card">
+              <div class="slicer-title">🧑‍💻 Filter by WF Team Member:</div>
+              <div class="slicer-items" id="wfSlicerItems">
+                <button class="slicer-btn active" onclick="setSlicer('wf', '')">All</button>
+              </div>
+            </div>
+            <div class="slicer-card">
+              <div class="slicer-title">📌 Filter by Status:</div>
+              <div class="slicer-items" id="statusSlicerItems">
+                <button class="slicer-btn active" onclick="setSlicer('status', '')">All</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-controls">
+            <div class="controls-group-left">
+              <input type="text" id="searchInput" placeholder="🔍 Search table..." onkeyup="filterTable()">
+            </div>
+            <div class="controls-group-right">
+              <button class="btn-control" onclick="toggleColumnPopover()">🎛️ Manage Columns</button>
+              <div class="column-popover" id="columnPopover"></div>
+              <button class="btn-control" id="wrapToggleBtn" onclick="toggleTextWrap()">📝 Wrap Text: OFF</button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table id="fullDataTable">
+              <thead id="tableHeader"></thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. TEAM LEAD ANALYTICS TAB -->
+      <div id="teamlead" class="tab-content">
+        <div class="draggable-zone" id="teamleadZone">
           
-          <div class="overview-filter-bar">
-            <div>
-              <label for="monthFilter">🗓️ Select Period / Month:</label>
-              <select id="monthFilter" onchange="renderOverviewMetrics()">
+          <div class="card theme-kpi-zone" draggable="true" data-card-id="tl-kpi">
+            <div class="card-header-bar">
+              <h3>👤 Team Lead Overview & Request Insights</h3>
+              <span class="drag-handle">:: Drag Section</span>
+            </div>
+            
+            <div class="overview-filter-bar">
+              <label for="tlMonthFilter">🗓️ Select Period / Month:</label>
+              <select id="tlMonthFilter" onchange="renderTeamLeadAnalytics()">
                 <option value="ALL">All Months (Year-to-Date)</option>
               </select>
             </div>
 
-            <!-- Theme Switcher Controls -->
-            <div>
-              <label for="themeSelect">🎨 Select Theme:</label>
-              <select id="themeSelect" onchange="changeTheme(this.value)">
-                <option value="dark">🌌 Obsidian Dark (Default)</option>
-                <option value="ocean">🌊 Ocean Blue</option>
-                <option value="light">☀️ Default Light</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr);">
-            <div class="kpi-card">
-              <div class="kpi-title"><span id="kpi-month-label">Selected Month</span> Total Requests 🎟️</div>
-              <div class="kpi-value" id="sept-total">0</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-title">Avg Target / Capacity 📈</div>
-              <div class="kpi-value" id="sept-avg-capacity">0</div>
-              <div class="kpi-subtext">Target per member (4.5 FTE capacity)</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-title">Active WF Team Members 🧑‍💻</div>
-              <div class="kpi-value" id="sept-wf-count">0</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card theme-charts-zone">
-          <div class="card-header-bar">
-            <h3>📊 Executive Visual Analytics</h3>
-            <span class="drag-handle">:: Drag Section</span>
-          </div>
-          <div class="charts-grid">
-            <div>
-              <h4 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-muted);">👥 Team Member Activity</h4>
-              <div class="chart-container"><canvas id="wfTeamChart"></canvas></div>
-            </div>
-            <div>
-              <h4 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-muted);">📊 Status Breakdown</h4>
-              <div class="status-container">
-                <div class="status-chart-area"><canvas id="septStatusChart"></canvas></div>
-                <div id="customStatusLegend" class="status-legend-box"></div>
+            <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr);">
+              <div class="kpi-card">
+                <div class="kpi-title">Identified Team Leads ✉️</div>
+                <div class="kpi-value" id="tl-count">0</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-title">Top Requesting Dept 🏢</div>
+                <div class="kpi-value" id="tl-top-dept" style="font-size: 18px;">-</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-title">Most Requested Type 🔝</div>
+                <div class="kpi-value" id="tl-top-type" style="font-size: 18px; color: var(--primary);">-</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-title">Prefilled SLA Compliance Rate ⏱️</div>
+                <div class="kpi-value" id="tl-sla-rate" style="color: var(--accent-green);">0%</div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="card theme-tables-zone">
-          <div class="card-header-bar">
-            <h3>📅 Weekly Ticket Breakdown per Team Member</h3>
-            <span class="drag-handle">:: Drag Section</span>
-          </div>
-          <div class="weekly-container">
-            <table class="weekly-table" id="weeklyTable" style="table-layout: auto;">
-              <thead>
-                <tr>
-                  <th style="text-align: left;">Team Member</th>
-                  <th>Week 1</th><th>Week 2</th><th>Week 3</th><th>Week 4</th><th>Week 5</th>
-                  <th>Total Tickets</th>
-                  <th>Target Status 🎯</th>
-                </tr>
-              </thead>
-              <tbody id="weeklyTableBody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="card theme-tables-zone">
-          <div class="card-header-bar">
-            <h3>📋 Request Type Breakdown by WF Team Member</h3>
-            <span class="drag-handle">:: Drag Section</span>
-          </div>
-          <div class="matrix-container">
-            <table id="matrixTable" style="table-layout: auto;">
-              <thead id="matrixHeader"></thead>
-              <tbody id="matrixBody"></tbody>
-            </table>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- 2. TICKETING TAB -->
-    <div id="ticketing" class="tab-content">
-      <div class="card">
-        <div class="card-header-bar">
-          <h3>📑 WF Ticketing Data Table</h3>
-          <span class="drag-handle">:: Drag Section</span>
-        </div>
-
-        <div class="slicers-container">
-          <div class="slicer-card">
-            <div class="slicer-title">🧑‍💻 Filter by WF Team Member:</div>
-            <div class="slicer-items" id="wfSlicerItems">
-              <button class="slicer-btn active" onclick="setSlicer('wf', '')">All</button>
+          <!-- UPGRADED VISUAL ANALYTICS: CURVED AREA GRADIENT CHARTS -->
+          <div class="card theme-charts-zone" draggable="true" data-card-id="tl-charts">
+            <div class="card-header-bar">
+              <h3>📊 Visual Analytics & Interactive SLA Trends</h3>
+              <span class="drag-handle">:: Drag Section</span>
+            </div>
+            <div class="charts-grid">
+              <div>
+                <h4 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-muted);">🔝 Volume Trend by Request Type</h4>
+                <div class="chart-container"><canvas id="reqTypeChart"></canvas></div>
+              </div>
+              <div>
+                <h4 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-muted);">⏱️ Interactive SLA Distribution Curve</h4>
+                <div class="chart-container"><canvas id="slaChart"></canvas></div>
+              </div>
             </div>
           </div>
-          <div class="slicer-card">
-            <div class="slicer-title">📌 Filter by Status:</div>
-            <div class="slicer-items" id="statusSlicerItems">
-              <button class="slicer-btn active" onclick="setSlicer('status', '')">All</button>
+
+          <div class="card theme-tables-zone" draggable="true" data-card-id="tl-matrix">
+            <div class="card-header-bar">
+              <h3>📑 Cross-Tabular Matrix: Request Type × Requesting Department</h3>
+              <span class="drag-handle">:: Drag Section</span>
+            </div>
+            <div class="matrix-container">
+              <table id="reqDeptMatrixTable" style="table-layout: auto;">
+                <thead id="reqDeptMatrixHeader"></thead>
+                <tbody id="reqDeptMatrixBody"></tbody>
+              </table>
             </div>
           </div>
-        </div>
 
-        <div class="table-controls">
-          <div class="controls-group-left">
-            <input type="text" id="searchInput" placeholder="🔍 Search table..." onkeyup="filterTable()">
+          <div class="card theme-tables-zone" draggable="true" data-card-id="tl-performance">
+            <div class="card-header-bar">
+              <h3>📊 Tickets per Team Lead & Trackers (SLA Performance)</h3>
+              <span class="drag-handle">:: Drag Section</span>
+            </div>
+            <div class="table-container" style="max-height: 400px;">
+              <table style="table-layout: auto;">
+                <thead>
+                  <tr>
+                    <th style="text-align: left;">Email Address</th>
+                    <th>Total Tickets</th>
+                    <th>Prefilled (≥4d)</th>
+                    <th>Short Notice (1-3d)</th>
+                    <th>Same Day</th>
+                    <th>Late</th>
+                    <th>TD2 Updated</th>
+                  </tr>
+                </thead>
+                <tbody id="tlTableBody"></tbody>
+              </table>
+            </div>
           </div>
-          <div class="controls-group-right">
-            <button class="btn-control" onclick="toggleColumnPopover()">🎛️ Manage Columns</button>
-            <div class="column-popover" id="columnPopover"></div>
-            <button class="btn-control" id="wrapToggleBtn" onclick="toggleTextWrap()">📝 Wrap Text: OFF</button>
-          </div>
-        </div>
 
-        <div class="table-container">
-          <table id="fullDataTable">
-            <thead id="tableHeader"></thead>
-            <tbody id="tableBody"></tbody>
-          </table>
         </div>
       </div>
+
     </div>
-
-    <!-- 3. TEAM LEAD ANALYTICS TAB -->
-    <div id="teamlead" class="tab-content">
-      <div class="draggable-zone">
-        
-        <div class="card theme-kpi-zone">
-          <div class="card-header-bar">
-            <h3>👤 Team Lead Overview & Request Insights</h3>
-            <span class="drag-handle">:: Drag Section</span>
-          </div>
-          
-          <div class="overview-filter-bar">
-            <label for="tlMonthFilter">🗓️ Select Period / Month:</label>
-            <select id="tlMonthFilter" onchange="renderTeamLeadAnalytics()">
-              <option value="ALL">All Months (Year-to-Date)</option>
-            </select>
-          </div>
-
-          <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr);">
-            <div class="kpi-card">
-              <div class="kpi-title">Identified Team Leads ✉️</div>
-              <div class="kpi-value" id="tl-count">0</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-title">Top Requesting Dept 🏢</div>
-              <div class="kpi-value" id="tl-top-dept" style="font-size: 18px;">-</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-title">Most Requested Type 🔝</div>
-              <div class="kpi-value" id="tl-top-type" style="font-size: 18px; color: var(--primary);">-</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-title">Prefilled SLA Compliance Rate ⏱️</div>
-              <div class="kpi-value" id="tl-sla-rate" style="color: var(--accent-green);">0%</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card theme-charts-zone">
-          <div class="card-header-bar">
-            <h3>📊 Visual Analytics & SLA Lead Time Distribution</h3>
-            <span class="drag-handle">:: Drag Section</span>
-          </div>
-          <div class="charts-grid">
-            <div>
-              <h4 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-muted);">🔝 Volume by Request Type</h4>
-              <div class="chart-container"><canvas id="reqTypeChart"></canvas></div>
-            </div>
-            <div>
-              <h4 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-muted);">⏱️ SLA / Lead Time Breakdown</h4>
-              <div class="chart-container"><canvas id="slaChart"></canvas></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card theme-tables-zone">
-          <div class="card-header-bar">
-            <h3>📑 Cross-Tabular Matrix: Request Type × Requesting Department</h3>
-            <span class="drag-handle">:: Drag Section</span>
-          </div>
-          <div class="matrix-container">
-            <table id="reqDeptMatrixTable" style="table-layout: auto;">
-              <thead id="reqDeptMatrixHeader"></thead>
-              <tbody id="reqDeptMatrixBody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="card theme-tables-zone">
-          <div class="card-header-bar">
-            <h3>📊 Tickets per Team Lead & Trackers (SLA Performance)</h3>
-            <span class="drag-handle">:: Drag Section</span>
-          </div>
-          <div class="table-container" style="max-height: 400px;">
-            <table style="table-layout: auto;">
-              <thead>
-                <tr>
-                  <th style="text-align: left;">Email Address</th>
-                  <th>Total Tickets</th>
-                  <th>Prefilled (≥4d)</th>
-                  <th>Short Notice (1-3d)</th>
-                  <th>Same Day</th>
-                  <th>Late</th>
-                  <th>TD2 Updated</th>
-                </tr>
-              </thead>
-              <tbody id="tlTableBody"></tbody>
-            </table>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
   </div>
 
   <script>
     Chart.register(ChartDataLabels);
 
-    // Active Apps Script Web App Proxy URL
     const GOOGLE_SHEET_CSV_URL = "https://script.google.com/a/macros/ltvplus.com/s/AKfycbyWV-68IeAHIQQBYIadbZrO9UNZMve7SY8SAyIVhyluXNZiJ0fWqxrm94GhH2UlzhqLJA/exec";
 
     let globalObjects = [];
@@ -650,7 +738,6 @@
     let activeStatusSlicer = '';
 
     let wfChartInstance = null;
-    let statusChartInstance = null;
     let reqTypeChartInstance = null;
     let slaChartInstance = null;
 
@@ -663,9 +750,64 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       fetchGoogleSheetData();
+      initDragAndDrop();
     });
 
-    // 1. Fetch Online Data via Google Apps Script Proxy
+    // 1. Drag and Drop Reordering Engine with localStorage Persistence
+    function initDragAndDrop() {
+      const zones = document.querySelectorAll('.draggable-zone');
+      zones.forEach(zone => {
+        const savedOrder = localStorage.getItem(`dragOrder_${zone.id}`);
+        if (savedOrder) {
+          const orderArray = JSON.parse(savedOrder);
+          orderArray.forEach(id => {
+            const card = zone.querySelector(`[data-card-id="${id}"]`);
+            if (card) zone.appendChild(card);
+          });
+        }
+
+        zone.addEventListener('dragover', e => {
+          e.preventDefault();
+          const draggingCard = document.querySelector('.card.dragging');
+          if (!draggingCard) return;
+          const afterElement = getDragAfterElement(zone, e.clientY);
+          if (afterElement == null) {
+            zone.appendChild(draggingCard);
+          } else {
+            zone.insertBefore(draggingCard, afterElement);
+          }
+        });
+      });
+
+      document.querySelectorAll('.card[draggable="true"]').forEach(card => {
+        card.addEventListener('dragstart', () => card.classList.add('dragging'));
+        card.addEventListener('dragend', () => {
+          card.classList.remove('dragging');
+          saveDragOrder(card.parentElement);
+        });
+      });
+    }
+
+    function getDragAfterElement(container, y) {
+      const draggableElements = [...container.querySelectorAll('.card[draggable="true"]:not(.dragging)')];
+      return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+          return { offset: offset, element: child };
+        } else {
+          return closest;
+        }
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    function saveDragOrder(zone) {
+      if (!zone || !zone.id) return;
+      const cardIds = [...zone.querySelectorAll('.card[data-card-id]')].map(c => c.getAttribute('data-card-id'));
+      localStorage.setItem(`dragOrder_${zone.id}`, JSON.stringify(cardIds));
+    }
+
+    // 2. Fetch Data Functions
     function fetchGoogleSheetData() {
       const statusElement = document.getElementById('dataStatus');
       if (statusElement) statusElement.innerText = "Refreshing online data...";
@@ -686,7 +828,6 @@
       });
     }
 
-    // 2. Load Offline CSV File from Browser
     function handleFileUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -709,7 +850,6 @@
       });
     }
 
-    // Shared Data Processor
     function processParsedData(data, fields, sourceName) {
       globalObjects = data;
       globalHeaders = fields;
@@ -745,7 +885,9 @@
     function switchTab(tabId, event) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      (event.target || event).classList.add('active');
+      
+      const targetBtn = event.currentTarget || event.target;
+      targetBtn.classList.add('active');
       document.getElementById(tabId).classList.add('active');
     }
 
@@ -1024,35 +1166,38 @@
         }
       });
 
+      // Render Progress Meters for Status Breakdown
       const statusCounts = {};
       activeDataset.forEach(row => {
         const statusVal = getKeyCaseInsensitive(row, 'STATUS');
-        if (statusVal && statusVal.trim()) statusCounts[statusVal.trim().toUpperCase()] = (statusCounts[statusVal.trim().toUpperCase()] || 0) + 1;
+        if (statusVal && statusVal.trim()) {
+          const cleanStatus = statusVal.trim().toUpperCase();
+          statusCounts[cleanStatus] = (statusCounts[cleanStatus] || 0) + 1;
+        }
       });
 
       const statusColors = ['#10b981', '#2dd4bf', '#f59e0b', '#f43f5e', '#818cf8', '#06b6d4'];
       const statusLabels = Object.keys(statusCounts);
-      const statusData = Object.values(statusCounts);
+      
+      let metersHTML = '';
+      statusLabels.forEach((st, i) => {
+        const count = statusCounts[st];
+        const pct = totalRequests > 0 ? ((count / totalRequests) * 100).toFixed(1) : 0;
+        const color = statusColors[i % statusColors.length];
 
-      if (statusChartInstance) statusChartInstance.destroy();
-      statusChartInstance = new Chart(document.getElementById('septStatusChart'), {
-        type: 'doughnut',
-        data: { labels: statusLabels, datasets: [{ data: statusData, backgroundColor: statusColors.slice(0, statusLabels.length) }] },
-        options: { 
-          responsive: true, maintainAspectRatio: false, 
-          plugins: { 
-            legend: { display: false }, 
-            datalabels: { display: true, color: '#ffffff', font: { weight: 'bold' }, formatter: v => v > 0 ? v : '' } 
-          } 
-        }
+        metersHTML += `
+          <div class="status-meter-row" title="${st}: ${count} tickets (${pct}%)">
+            <div class="status-meter-header">
+              <span><span style="display:inline-block; width:8px; height:8px; border-radius:2px; background:${color}; margin-right:8px;"></span>${st}</span>
+              <span><strong>${count}</strong> (${pct}%)</span>
+            </div>
+            <div class="status-meter-bar-bg">
+              <div class="status-meter-bar-fill" style="width: ${pct}%; background: ${color};"></div>
+            </div>
+          </div>`;
       });
 
-      document.getElementById('customStatusLegend').innerHTML = statusLabels.map((st, i) => `
-        <div class="legend-row">
-          <span><span class="legend-badge" style="background:${statusColors[i]}"></span>${st}</span>
-          <b>${statusData[i]}</b>
-        </div>
-      `).join('');
+      document.getElementById('statusMetersContainer').innerHTML = metersHTML || '<div style="color:var(--text-muted); font-size:13px;">No status records found</div>';
 
       const numTarget = parseFloat(targetCapacity) || 0;
       document.getElementById('weeklyTableBody').innerHTML = members.map(m => {
@@ -1107,6 +1252,7 @@
       document.getElementById('matrixBody').innerHTML = rowsHTML;
     }
 
+    // 3. Render Team Lead Analytics with Curved Area Line Charts
     function renderTeamLeadAnalytics() {
       const selectedMonth = document.getElementById('tlMonthFilter').value;
       const labelColor = getChartTextColor();
@@ -1178,40 +1324,75 @@
       const prefilledRate = totalSla > 0 ? ((slaCounts['Prefilled'] / totalSla) * 100).toFixed(1) : 0;
       document.getElementById('tl-sla-rate').innerText = `${prefilledRate}%`;
 
+      // CURVED GRADIENT AREA CHART 1: Request Type Trend
       const topTypesSorted = Object.keys(typeCounts).sort((a,b) => typeCounts[b] - typeCounts[a]).slice(0, 6);
-      if (reqTypeChartInstance) reqTypeChartInstance.destroy();
-      reqTypeChartInstance = new Chart(document.getElementById('reqTypeChart'), {
-        type: 'bar',
-        data: { labels: topTypesSorted, datasets: [{ label: 'Tickets', data: topTypesSorted.map(t => typeCounts[t]), backgroundColor: '#10b981', borderRadius: 8 }] },
-        options: { 
-          responsive: true, maintainAspectRatio: false,
-          scales: {
-            x: { grid: { display: false }, ticks: { color: labelColor } },
-            y: { grid: { display: false }, ticks: { color: labelColor } }
-          },
-          plugins: { 
-            legend: { display: false }, 
-            datalabels: { display: true, color: '#ffffff', font: { weight: 'bold' }, formatter: v => v > 0 ? v : '' } 
-          } 
-        }
-      });
+      const ctxReq = document.getElementById('reqTypeChart').getContext('2d');
+      const gradReq = ctxReq.createLinearGradient(0, 0, 0, 240);
+      gradReq.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+      gradReq.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
 
-      if (slaChartInstance) slaChartInstance.destroy();
-      slaChartInstance = new Chart(document.getElementById('slaChart'), {
-        type: 'bar',
+      if (reqTypeChartInstance) reqTypeChartInstance.destroy();
+      reqTypeChartInstance = new Chart(ctxReq, {
+        type: 'line',
         data: { 
-          labels: ['Prefilled (>=4d)', 'Short notice (1-3d)', 'Same day submission', 'Late'], 
-          datasets: [{ label: 'Tickets', data: Object.values(slaCounts), backgroundColor: ['#10b981', '#f59e0b', '#fb923c', '#f43f5e'], borderRadius: 8 }] 
+          labels: topTypesSorted, 
+          datasets: [{ 
+            label: 'Tickets', 
+            data: topTypesSorted.map(t => typeCounts[t]), 
+            borderColor: '#10b981', 
+            borderWidth: 3,
+            backgroundColor: gradReq,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 5,
+            pointBackgroundColor: '#10b981'
+          }] 
         },
         options: { 
           responsive: true, maintainAspectRatio: false,
           scales: {
-            x: { grid: { display: false }, ticks: { color: labelColor } },
-            y: { grid: { display: false }, ticks: { color: labelColor } }
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: labelColor } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: labelColor } }
           },
           plugins: { 
             legend: { display: false }, 
-            datalabels: { display: true, color: '#ffffff', font: { weight: 'bold' }, formatter: v => v > 0 ? v : '' } 
+            datalabels: { display: true, color: '#ffffff', font: { weight: 'bold' }, align: 'top', formatter: v => v > 0 ? v : '' } 
+          } 
+        }
+      });
+
+      // CURVED GRADIENT AREA CHART 2: SLA Distribution
+      const ctxSla = document.getElementById('slaChart').getContext('2d');
+      const gradSla = ctxSla.createLinearGradient(0, 0, 0, 240);
+      gradSla.addColorStop(0, 'rgba(45, 212, 191, 0.4)');
+      gradSla.addColorStop(1, 'rgba(45, 212, 191, 0.0)');
+
+      if (slaChartInstance) slaChartInstance.destroy();
+      slaChartInstance = new Chart(ctxSla, {
+        type: 'line',
+        data: { 
+          labels: ['Prefilled (>=4d)', 'Short notice (1-3d)', 'Same day', 'Late'], 
+          datasets: [{ 
+            label: 'Tickets', 
+            data: Object.values(slaCounts), 
+            borderColor: '#2dd4bf', 
+            borderWidth: 3,
+            backgroundColor: gradSla,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 6,
+            pointBackgroundColor: '#2dd4bf'
+          }] 
+        },
+        options: { 
+          responsive: true, maintainAspectRatio: false,
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: labelColor } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: labelColor } }
+          },
+          plugins: { 
+            legend: { display: false }, 
+            datalabels: { display: true, color: '#ffffff', font: { weight: 'bold' }, align: 'top', formatter: v => v > 0 ? v : '' } 
           } 
         }
       });
