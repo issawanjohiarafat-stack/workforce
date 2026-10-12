@@ -201,7 +201,12 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* Glass Status & Control Banner */
+    /* Collapsible Glass Status & Control Banner */
+    .status-bar-wrapper {
+      position: relative;
+      margin-bottom: 24px;
+    }
+
     .status-bar { 
       background: var(--card-bg); 
       backdrop-filter: blur(16px);
@@ -209,16 +214,94 @@
       border: 1px solid var(--glass-border); 
       padding: 14px 22px; 
       border-radius: 18px; 
-      margin-bottom: 24px; 
       display: flex; 
       align-items: center; 
       justify-content: space-between; 
       font-size: 13px; 
       color: var(--text-main);
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+      max-height: 200px;
+      opacity: 1;
+    }
+
+    .status-bar.collapsed {
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      margin: 0;
+      opacity: 0;
+      border: none;
+      pointer-events: none;
+    }
+
+    .status-bar-toggle-btn {
+      position: absolute;
+      bottom: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--card-bg-elevated);
+      border: 1px solid var(--glass-border);
+      color: var(--primary);
+      border-radius: 20px;
+      padding: 2px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .status-bar-toggle-btn:hover {
+      background: var(--primary);
+      color: #0b0f17;
     }
 
     .status-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+    /* Dropdown Styles */
+    .dropdown-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      margin-top: 6px;
+      background: var(--card-bg-elevated);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      z-index: 100;
+      min-width: 160px;
+      overflow: hidden;
+    }
+
+    .dropdown-container:hover .dropdown-menu {
+      display: block;
+    }
+
+    .dropdown-item {
+      padding: 10px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s ease;
+    }
+
+    .dropdown-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--primary);
+    }
 
     .draggable-zone { 
       display: flex; 
@@ -620,26 +703,32 @@
   <div class="main-wrapper">
     <div class="container">
 
-      <!-- Live Data Banner & Global Control Bubble Bar -->
-      <div class="status-bar">
-        <div>
-          <strong>🌐 Offline Data Portal:</strong> <span id="dataStatus">Awaiting File Input...</span>
+      <!-- Collapsible Glass Status & Control Banner (First Page Only) -->
+      <div id="firstPageControlBanner" class="status-bar-wrapper">
+        <div id="statusBarCard" class="status-bar">
+          <div>
+            <strong>🌐 Offline Data Portal:</strong> <span id="dataStatus">Awaiting File Input...</span>
+          </div>
+          <div class="status-actions">
+            <input type="file" id="offlineFileInput" accept=".csv" style="display: none;" onchange="handleFileUpload(event)">
+            <button class="btn-control" onclick="document.getElementById('offlineFileInput').click()">📂 Upload CSV File</button>
+            
+            <!-- Mode Toggle Bubble Buttons -->
+            <button class="btn-control" id="dragToggleBtn" onclick="toggleDragMode()" style="border-color: var(--primary); color: var(--primary);">
+              🔀 Rearrange Sections: OFF
+            </button>
+
+            <!-- Export Dropdown Option -->
+            <div class="dropdown-container">
+              <button class="btn-control">📥 Export View ▾</button>
+              <div class="dropdown-menu">
+                <div class="dropdown-item" onclick="exportActiveTabCSV()">📄 Export CSV</div>
+                <div class="dropdown-item" onclick="exportActiveTabExcel()">📊 Export Excel (.xls)</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="status-actions">
-          <input type="file" id="offlineFileInput" accept=".csv" style="display: none;" onchange="handleFileUpload(event)">
-          <button class="btn-control" onclick="document.getElementById('offlineFileInput').click()">📂 Upload CSV File</button>
-          
-          <!-- Mode Toggle Bubble Buttons -->
-          <button class="btn-control" id="dragToggleBtn" onclick="toggleDragMode()" style="border-color: var(--primary); color: var(--primary);">
-            🔀 Rearrange Sections: OFF
-          </button>
-          <button class="btn-control" onclick="exportActiveTabCSV()">
-            📥 Export Active View (CSV)
-          </button>
-          <button class="btn-control" onclick="exportActiveTabExcel()">
-            📊 Export Active View (Excel)
-          </button>
-        </div>
+        <button class="status-bar-toggle-btn" onclick="toggleStatusBar()">▲ Collapse Header</button>
       </div>
 
       <!-- 1. OVERVIEW TAB -->
@@ -843,7 +932,6 @@
             </div>
           </div>
 
-          <!-- RENAMED SECTION: Analytics and SLA Trends -->
           <div class="card theme-charts-zone" draggable="false" data-card-id="tl-charts">
             <div class="card-header-bar">
               <h3>📊 Analytics and SLA Trends</h3>
@@ -862,7 +950,6 @@
               </div>
             </div>
 
-            <!-- 🔥 NEW SLA PERCENTAGE BREAKDOWN CARDS BELOW CHARTS -->
             <div style="margin-top: 24px; padding-top: 18px; border-top: 1px dashed var(--glass-border);">
               <h4 style="margin: 0 0 14px 0; font-size: 13px; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em;">⏱️ Comprehensive SLA Compliance Breakdown (%)</h4>
               <div id="slaPercentageMeters" class="sla-meters-grid"></div>
@@ -884,6 +971,7 @@
             </div>
           </div>
 
+          <!-- REPLACED COLUMN: Prefilled % for each team leader -->
           <div class="card theme-tables-zone" draggable="false" data-card-id="tl-performance">
             <div class="card-header-bar">
               <h3>📊 Tickets per Team Lead & Trackers (SLA Performance)</h3>
@@ -901,7 +989,7 @@
                     <th>Short Notice (1-3d)</th>
                     <th>Same Day</th>
                     <th>Late</th>
-                    <th>TD2 Updated</th>
+                    <th>Prefilled SLA % ⏱️</th>
                   </tr>
                 </thead>
                 <tbody id="tlTableBody"></tbody>
@@ -912,10 +1000,50 @@
         </div>
       </div>
 
-      <!-- 4. 🔥 NEW TAB: MONTHLY SUMMARY -->
+      <!-- 4. MONTHLY SUMMARY TAB -->
       <div id="monthlySummary" class="tab-content">
         <div class="draggable-zone" id="summaryZone">
           
+          <!-- 🔥 NEW: CURRENT MONTH SPECIFIC ANALYTICS CARD -->
+          <div class="card theme-kpi-zone" draggable="false" data-card-id="ms-current">
+            <div class="card-header-bar">
+              <h3>⚡ Current Month Active Snapshot (<span id="currentMonthTitle">-</span>)</h3>
+              <div class="card-action-bar">
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
+            </div>
+            
+            <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 20px;">
+              <div class="kpi-card">
+                <div class="kpi-title">Current Month Volume 🎟️</div>
+                <div class="kpi-value" id="cm-volume" style="color:var(--primary);">0</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-title">Active Requesting Leads 👥</div>
+                <div class="kpi-value" id="cm-leads">0</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-title">Current SLA Compliance ⏱️</div>
+                <div class="kpi-value" id="cm-sla" style="color:var(--accent-green);">0%</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-title">Pending Active Items ⏳</div>
+                <div class="kpi-value" id="cm-pending" style="color:var(--accent-amber);">0</div>
+              </div>
+            </div>
+
+            <div class="charts-grid">
+              <div>
+                <h4 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-muted);">⚡ Current Month Top Request Types</h4>
+                <div class="chart-container"><canvas id="currentMonthTypesChart"></canvas></div>
+              </div>
+              <div>
+                <h4 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-muted);">⚡ Current Month SLA Distribution</h4>
+                <div class="chart-container"><canvas id="currentMonthSlaChart"></canvas></div>
+              </div>
+            </div>
+          </div>
+
           <div class="card theme-kpi-zone" draggable="false" data-card-id="ms-trends">
             <div class="card-header-bar">
               <h3>📈 High-Level Monthly Trends & Executive Analytics</h3>
@@ -993,6 +1121,8 @@
     let slaChartInstance = null;
     let monthlyVolumeChartInstance = null;
     let monthlySlaTrendChartInstance = null;
+    let currentMonthTypesChartInstance = null;
+    let currentMonthSlaChartInstance = null;
 
     const EDITABLE_COLUMNS = {
       'filed in pf': ['Yes', 'No', 'Pending', 'N/A'],
@@ -1004,6 +1134,19 @@
     window.addEventListener('DOMContentLoaded', () => {
       initDragAndDrop();
     });
+
+    // 🌟 COLLAPSIBLE HEADER TOGGLE
+    function toggleStatusBar() {
+      const bar = document.getElementById('statusBarCard');
+      const btn = document.querySelector('.status-bar-toggle-btn');
+      if (bar.classList.contains('collapsed')) {
+        bar.classList.remove('collapsed');
+        btn.innerText = "▲ Collapse Header";
+      } else {
+        bar.classList.add('collapsed');
+        btn.innerText = "▼ Expand Header Bar";
+      }
+    }
 
     // 🔀 TOGGLE DRAG & DROP MODE ON/OFF
     function toggleDragMode() {
@@ -1196,6 +1339,14 @@
       const targetBtn = event.currentTarget || event.target;
       targetBtn.classList.add('active');
       document.getElementById(tabId).classList.add('active');
+
+      // 🔥 HIDE TOP CONTROL BANNER ON ALL PAGES EXCEPT FIRST (OVERVIEW)
+      const banner = document.getElementById('firstPageControlBanner');
+      if (tabId === 'overview') {
+        banner.style.display = 'block';
+      } else {
+        banner.style.display = 'none';
+      }
     }
 
     function getKeyCaseInsensitive(obj, keyName) {
@@ -1530,7 +1681,6 @@
       renderMatrixTable(activeDataset);
     }
 
-    // 🔥 Top 4 Pending Tickets Compiler (Sorted by Timestamp)
     function renderTop4PendingTickets(dataset) {
       const pendingRows = dataset.filter(row => {
         const st = (getKeyCaseInsensitive(row, 'STATUS') || '').toLowerCase();
@@ -1601,7 +1751,7 @@
       document.getElementById('matrixBody').innerHTML = rowsHTML;
     }
 
-    // 3. Render Team Lead Analytics with Comprehensive SLA % Meters
+    // 3. Render Team Lead Analytics with REPLACED Prefilled % Column
     function renderTeamLeadAnalytics() {
       const selectedMonth = document.getElementById('tlMonthFilter').value;
       const labelColor = getChartTextColor();
@@ -1623,13 +1773,12 @@
         const email = getFlexibleValue(row, ['Email Address', 'Email', 'Team Lead Email', 'Lead Email']) || 'unassigned@company.com';
         const reqType = getFlexibleValue(row, ['TYPE OF REQUEST', 'Request Type']) || 'General Request';
         const leadTime = getFlexibleValue(row, ['Request Lead Time', 'Lead Time', 'SLA Lead Time', 'SLA']).toLowerCase();
-        const td2 = getFlexibleValue(row, ['TD2 Updated', 'TD2', 'TD2 Status']).toLowerCase();
 
         deptCounts[dept] = (deptCounts[dept] || 0) + 1;
         typeCounts[reqType] = (typeCounts[reqType] || 0) + 1;
 
         if (!tlData[email]) {
-          tlData[email] = { tickets: 0, td2Yes: 0, prefilled: 0, shortNotice: 0, sameDay: 0, late: 0 };
+          tlData[email] = { tickets: 0, prefilled: 0, shortNotice: 0, sameDay: 0, late: 0 };
         }
 
         tlData[email].tickets++;
@@ -1650,8 +1799,6 @@
           slaCounts['Prefilled']++;
           tlData[email].prefilled++;
         }
-
-        if (['yes', 'y', 'true', '1', 'completed', 'updated', 'in progress'].includes(td2)) tlData[email].td2Yes++;
       });
 
       const tls = Object.keys(tlData);
@@ -1677,7 +1824,6 @@
 
       document.getElementById('tl-sla-rate').innerText = `${prefilledRate}%`;
 
-      // 🔥 RENDER FULL COMPREHENSIVE SLA METERS (%)
       document.getElementById('slaPercentageMeters').innerHTML = `
         <div class="sla-meter-card">
           <div class="sla-meter-label">Prefilled Rate (≥4d)</div>
@@ -1776,20 +1922,25 @@
 
       renderReqDeptMatrix(activeDataset);
 
-      document.getElementById('tlTableBody').innerHTML = tls.sort().map(e => `
-        <tr>
-          <td style="text-align: left; font-weight: 600;">✉️ ${e}</td>
-          <td><b>${tlData[e].tickets}</b></td>
-          <td><span style="color: #34d399; font-weight: 600;">${tlData[e].prefilled}</span></td>
-          <td><span style="color: #fbbf24;">${tlData[e].shortNotice}</span></td>
-          <td><span style="color: #fb923c;">${tlData[e].sameDay}</span></td>
-          <td><span style="color: #fb7185; font-weight: 600;">${tlData[e].late}</span></td>
-          <td>${tlData[e].td2Yes}</td>
-        </tr>
-      `).join('');
+      // 🔥 TABLE RENDER: REPLACED TD2 UPDATE WITH PREFILLED % FOR EACH LEADER
+      document.getElementById('tlTableBody').innerHTML = tls.sort().map(e => {
+        const leadTot = tlData[e].tickets;
+        const leadPrefilledPct = leadTot > 0 ? ((tlData[e].prefilled / leadTot) * 100).toFixed(1) : '0.0';
+
+        return `
+          <tr>
+            <td style="text-align: left; font-weight: 600;">✉️ ${e}</td>
+            <td><b>${leadTot}</b></td>
+            <td><span style="color: #34d399; font-weight: 600;">${tlData[e].prefilled}</span></td>
+            <td><span style="color: #fbbf24;">${tlData[e].shortNotice}</span></td>
+            <td><span style="color: #fb923c;">${tlData[e].sameDay}</span></td>
+            <td><span style="color: #fb7185; font-weight: 600;">${tlData[e].late}</span></td>
+            <td><strong style="color: var(--primary);">${leadPrefilledPct}%</strong></td>
+          </tr>`;
+      }).join('');
     }
 
-    // 4. 🔥 NEW TAB ENGINE: RENDER MONTHLY SUMMARY & TREND ANALYSIS
+    // 4. MONTHLY SUMMARY & CURRENT MONTH SNAPSHOT ENGINE
     function renderMonthlySummary() {
       const labelColor = getChartTextColor();
       const monthlyData = {};
@@ -1807,13 +1958,19 @@
         else month = month.trim();
 
         if (!monthlyData[month]) {
-          monthlyData[month] = { total: 0, leads: new Set(), prefilled: 0, shortNotice: 0, sameDay: 0, late: 0 };
+          monthlyData[month] = { total: 0, leads: new Set(), prefilled: 0, shortNotice: 0, sameDay: 0, late: 0, pending: 0, types: {} };
         }
 
         monthlyData[month].total++;
 
         const email = getFlexibleValue(row, ['Email Address', 'Email', 'Team Lead Email', 'Lead Email']);
         if (email) monthlyData[month].leads.add(email);
+
+        const statusVal = (getKeyCaseInsensitive(row, 'STATUS') || '').toLowerCase();
+        if (statusVal.includes('pending') || statusVal.includes('open')) monthlyData[month].pending++;
+
+        const typeVal = getFlexibleValue(row, ['TYPE OF REQUEST', 'Request Type']) || 'General';
+        monthlyData[month].types[typeVal] = (monthlyData[month].types[typeVal] || 0) + 1;
 
         const leadTime = getFlexibleValue(row, ['Request Lead Time', 'Lead Time', 'SLA Lead Time', 'SLA']).toLowerCase();
         if (leadTime.includes('prefilled') || leadTime.includes('>=4')) monthlyData[month].prefilled++;
@@ -1824,33 +1981,89 @@
       });
 
       const monthKeys = Object.keys(monthlyData);
+      
+      // 🔥 1. CURRENT MONTH SNAPSHOT (Pick Last Active Month in dataset)
+      const currentMonth = monthKeys.length > 0 ? monthKeys[monthKeys.length - 1] : 'Active Period';
+      document.getElementById('currentMonthTitle').innerText = currentMonth;
+
+      const cmData = monthlyData[currentMonth] || { total: 0, leads: new Set(), prefilled: 0, shortNotice: 0, sameDay: 0, late: 0, pending: 0, types: {} };
+      document.getElementById('cm-volume').innerText = cmData.total;
+      document.getElementById('cm-leads').innerText = `${cmData.leads.size} Leads`;
+      
+      const cmSlaPct = cmData.total > 0 ? ((cmData.prefilled / cmData.total) * 100).toFixed(1) : '0.0';
+      document.getElementById('cm-sla').innerText = `${cmSlaPct}%`;
+      document.getElementById('cm-pending').innerText = cmData.pending;
+
+      // Current Month Cool Charts
+      const topCmTypes = Object.keys(cmData.types).sort((a,b) => cmData.types[b] - cmData.types[a]).slice(0, 5);
+      const ctxCmTypes = document.getElementById('currentMonthTypesChart').getContext('2d');
+      if (currentMonthTypesChartInstance) currentMonthTypesChartInstance.destroy();
+      currentMonthTypesChartInstance = new Chart(ctxCmTypes, {
+        type: 'bar',
+        data: {
+          labels: topCmTypes,
+          datasets: [{ label: 'Tickets', data: topCmTypes.map(t => cmData.types[t]), backgroundColor: '#2dd4bf', borderRadius: 8 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+          scales: { x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: labelColor } }, y: { ticks: { color: labelColor } } },
+          plugins: { legend: { display: false }, datalabels: { color: '#0b0f17', font: { weight: 'bold' } } }
+        }
+      });
+
+      const ctxCmSla = document.getElementById('currentMonthSlaChart').getContext('2d');
+      if (currentMonthSlaChartInstance) currentMonthSlaChartInstance.destroy();
+      currentMonthSlaChartInstance = new Chart(ctxCmSla, {
+        type: 'doughnut',
+        data: {
+          labels: ['Prefilled (≥4d)', 'Short Notice', 'Same Day', 'Late'],
+          datasets: [{
+            data: [cmData.prefilled, cmData.shortNotice, cmData.sameDay, cmData.late],
+            backgroundColor: ['#10b981', '#f59e0b', '#fb923c', '#f43f5e'],
+            borderWidth: 2,
+            borderColor: '#0b0f17'
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '70%',
+          plugins: { legend: { position: 'right', labels: { color: labelColor, font: { size: 11 } } }, datalabels: { display: false } }
+        }
+      });
+
+      // 🔥 2. OVERALL MONTHLY TREND CHARTS
       const volumeList = monthKeys.map(m => monthlyData[m].total);
       const slaRateList = monthKeys.map(m => {
         const tot = monthlyData[m].total;
         return tot > 0 ? parseFloat(((monthlyData[m].prefilled / tot) * 100).toFixed(1)) : 0;
       });
 
-      // Chart 1: Monthly Volume
       const ctxVol = document.getElementById('monthlyVolumeChart').getContext('2d');
+      const gradVol = ctxVol.createLinearGradient(0, 0, 0, 240);
+      gradVol.addColorStop(0, 'rgba(56, 189, 248, 0.4)');
+      gradVol.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
+
       if (monthlyVolumeChartInstance) monthlyVolumeChartInstance.destroy();
       monthlyVolumeChartInstance = new Chart(ctxVol, {
-        type: 'bar',
+        type: 'line',
         data: {
           labels: monthKeys,
-          datasets: [{ label: 'Total Tickets', data: volumeList, backgroundColor: '#38bdf8', borderRadius: 8 }]
+          datasets: [{ label: 'Total Tickets', data: volumeList, borderColor: '#38bdf8', borderWidth: 3, backgroundColor: gradVol, fill: true, tension: 0.4, pointRadius: 6, pointBackgroundColor: '#38bdf8' }]
         },
         options: {
           responsive: true, maintainAspectRatio: false,
           scales: {
-            x: { grid: { display: false }, ticks: { color: labelColor } },
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: labelColor } },
             y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: labelColor } }
           },
-          plugins: { legend: { display: false }, datalabels: { display: true, color: '#0b0f17', font: { weight: 'bold' } } }
+          plugins: { legend: { display: false }, datalabels: { display: true, color: '#ffffff', font: { weight: 'bold' }, align: 'top' } }
         }
       });
 
-      // Chart 2: SLA Rate Trend Line
       const ctxSlaTrend = document.getElementById('monthlySlaTrendChart').getContext('2d');
+      const gradSlaTrend = ctxSlaTrend.createLinearGradient(0, 0, 0, 240);
+      gradSlaTrend.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+      gradSlaTrend.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
       if (monthlySlaTrendChartInstance) monthlySlaTrendChartInstance.destroy();
       monthlySlaTrendChartInstance = new Chart(ctxSlaTrend, {
         type: 'line',
@@ -1861,7 +2074,9 @@
             data: slaRateList,
             borderColor: '#10b981',
             borderWidth: 3,
-            tension: 0.3,
+            backgroundColor: gradSlaTrend,
+            fill: true,
+            tension: 0.4,
             pointRadius: 6,
             pointBackgroundColor: '#10b981'
           }]
@@ -1869,7 +2084,7 @@
         options: {
           responsive: true, maintainAspectRatio: false,
           scales: {
-            x: { grid: { display: false }, ticks: { color: labelColor } },
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: labelColor } },
             y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: labelColor }, min: 0, max: 100 }
           },
           plugins: { legend: { display: false }, datalabels: { display: true, color: '#ffffff', font: { weight: 'bold' }, formatter: v => `${v}%` } }
@@ -1893,7 +2108,7 @@
           </tr>`;
       }).join('');
 
-      // Generate Detailed Notes
+      // Executive Notes
       const peakMonth = monthKeys.reduce((max, m) => monthlyData[m].total > (monthlyData[max]?.total || 0) ? m : max, monthKeys[0] || '-');
       const avgSla = slaRateList.length > 0 ? (slaRateList.reduce((a,b)=>a+b,0) / slaRateList.length).toFixed(1) : 0;
 
