@@ -171,6 +171,12 @@
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     }
 
+    .status-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
     .draggable-zone { display: flex; flex-direction: column; gap: 24px; }
     
     /* Glassmorphism Container Cards */
@@ -376,12 +382,17 @@
 
   <div class="container">
 
-    <!-- Live Google Sheets Data Stream Bar -->
+    <!-- Live Google Sheets Data Stream Bar & Offline Upload Controls -->
     <div class="status-bar">
       <div>
         <strong>🌐 Live Data Stream:</strong> <span id="dataStatus">Connecting to Google Sheets Proxy...</span>
       </div>
-      <button class="btn-control" onclick="fetchGoogleSheetData()">🔄 Refresh Data</button>
+      <div class="status-actions">
+        <!-- Hidden file input triggered by custom button -->
+        <input type="file" id="offlineFileInput" accept=".csv" style="display: none;" onchange="handleFileUpload(event)">
+        <button class="btn-control" onclick="document.getElementById('offlineFileInput').click()">📂 Upload Local CSV</button>
+        <button class="btn-control" onclick="fetchGoogleSheetData()">🔄 Sync Live Sheet</button>
+      </div>
     </div>
 
     <!-- 1. OVERVIEW TAB -->
@@ -654,6 +665,7 @@
       fetchGoogleSheetData();
     });
 
+    // 1. Fetch Online Data via Google Apps Script Proxy
     function fetchGoogleSheetData() {
       const statusElement = document.getElementById('dataStatus');
       if (statusElement) statusElement.innerText = "Refreshing online data...";
@@ -663,27 +675,56 @@
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-          globalObjects = results.data;
-          globalHeaders = results.meta.fields;
-
-          if (statusElement) {
-            statusElement.innerHTML = `<span style="color:#2dd4bf; font-weight:bold;">Connected</span> (${globalObjects.length} records loaded)`;
-          }
-
-          populateMonthDropdowns();
-          buildSlicers();
-          buildManageColumnsPopover();
-          renderTable();
-          renderOverviewMetrics();
-          renderTeamLeadAnalytics();
+          processParsedData(results.data, results.meta.fields, "Online Stream");
         },
         error: function(err) {
           console.error("Error fetching Google Sheet via Proxy:", err);
           if (statusElement) {
-            statusElement.innerHTML = `<span style="color:#f43f5e; font-weight:bold;">Failed to sync data</span>`;
+            statusElement.innerHTML = `<span style="color:#f43f5e; font-weight:bold;">Failed to sync live data</span>`;
           }
         }
       });
+    }
+
+    // 2. Load Offline CSV File from Browser
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const statusElement = document.getElementById('dataStatus');
+      if (statusElement) statusElement.innerText = "Parsing offline file...";
+
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          processParsedData(results.data, results.meta.fields, `Local File (${file.name})`);
+        },
+        error: function(err) {
+          console.error("Error parsing offline CSV file:", err);
+          if (statusElement) {
+            statusElement.innerHTML = `<span style="color:#f43f5e; font-weight:bold;">Failed to load offline file</span>`;
+          }
+        }
+      });
+    }
+
+    // Shared Data Processor
+    function processParsedData(data, fields, sourceName) {
+      globalObjects = data;
+      globalHeaders = fields;
+
+      const statusElement = document.getElementById('dataStatus');
+      if (statusElement) {
+        statusElement.innerHTML = `<span style="color:#2dd4bf; font-weight:bold;">Connected (${sourceName})</span> - ${globalObjects.length} records loaded`;
+      }
+
+      populateMonthDropdowns();
+      buildSlicers();
+      buildManageColumnsPopover();
+      renderTable();
+      renderOverviewMetrics();
+      renderTeamLeadAnalytics();
     }
 
     function changeTheme(themeName) {
