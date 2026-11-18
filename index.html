@@ -12,9 +12,6 @@
     }
   </script>
 
-  <!-- Google Identity Services (GIS) for Workspace SSO & MFA -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -88,106 +85,7 @@
       color: var(--text-main); 
       transition: background-color 0.3s ease, color 0.3s ease; 
       -webkit-font-smoothing: antialiased;
-      min-height: 100vh;
-    }
-
-    /* 🔒 GOOGLE WORKSPACE SSO & MFA LOGIN OVERLAY */
-    #authGateOverlay {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      background: radial-gradient(circle at top right, rgba(45, 212, 191, 0.14), transparent 45%),
-                  radial-gradient(circle at bottom left, rgba(56, 189, 248, 0.12), transparent 45%),
-                  #0b0f17;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .auth-glass-card {
-      background: rgba(21, 28, 44, 0.78);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 28px;
-      padding: 44px 38px;
-      max-width: 440px;
-      width: 100%;
-      text-align: center;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 35px rgba(45, 212, 191, 0.15);
-    }
-
-    .auth-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      border-radius: 9999px;
-      background: rgba(45, 212, 191, 0.12);
-      border: 1px solid rgba(45, 212, 191, 0.3);
-      color: #2dd4bf;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 20px;
-    }
-
-    .auth-title {
-      font-size: 24px;
-      font-weight: 800;
-      margin: 0 0 10px 0;
-      letter-spacing: -0.02em;
-      color: #f8fafc;
-    }
-
-    .auth-subtitle {
-      font-size: 13px;
-      color: #94a3b8;
-      line-height: 1.6;
-      margin: 0 0 28px 0;
-    }
-
-    .google-btn-wrapper {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 22px;
-      min-height: 44px;
-    }
-
-    .auth-security-notes {
-      background: rgba(15, 23, 42, 0.65);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 14px;
-      padding: 14px 16px;
-      text-align: left;
-      font-size: 11px;
-      color: #94a3b8;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .auth-security-notes div { display: flex; align-items: center; gap: 8px; }
-
-    #authErrorBanner {
-      display: none;
-      margin-top: 18px;
-      padding: 12px 14px;
-      border-radius: 12px;
-      background: rgba(244, 63, 94, 0.15);
-      border: 1px solid rgba(244, 63, 94, 0.4);
-      color: #fda4af;
-      font-size: 12px;
-      font-weight: 600;
-      line-height: 1.5;
-    }
-
-    /* Protected App Shell (Hidden until SSO verified) */
-    #protectedAppShell {
-      display: none;
-      width: 100%;
       min-height: 100vh;
     }
 
@@ -271,7 +169,7 @@
       box-shadow: 0 0 20px var(--primary-glow);
     }
 
-    /* Authenticated Employee Profile Footer in Sidebar */
+    /* Admin Profile Footer in Sidebar */
     .sidebar-user-footer {
       border-top: 1px solid var(--glass-border);
       padding-top: 14px;
@@ -282,40 +180,25 @@
 
     .user-profile-pill { display: flex; align-items: center; gap: 12px; padding: 6px; white-space: nowrap; }
 
-    .user-avatar {
+    .user-avatar-badge {
       width: 34px;
       height: 34px;
       min-width: 34px;
       border-radius: 50%;
       border: 2px solid var(--primary);
-      object-fit: cover;
-      background: #1e293b;
+      background: rgba(45, 212, 191, 0.15);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 13px;
     }
 
     .user-meta { display: flex; flex-direction: column; opacity: 0; transition: opacity 0.25s ease; overflow: hidden; }
     .sidebar-nav:hover .user-meta { opacity: 1; }
     .user-name { font-size: 12px; font-weight: 700; color: var(--text-main); text-overflow: ellipsis; overflow: hidden; }
     .user-email { font-size: 10px; color: var(--primary); text-overflow: ellipsis; overflow: hidden; }
-
-    .signout-btn {
-      background: rgba(244, 63, 94, 0.14);
-      border: 1px solid rgba(244, 63, 94, 0.35);
-      color: #fda4af;
-      padding: 10px 14px;
-      border-radius: 14px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      white-space: nowrap;
-      transition: all 0.2s ease;
-    }
-
-    .signout-btn:hover { background: rgba(244, 63, 94, 0.28); color: #ffffff; }
-    .signout-btn .tab-label { opacity: 0; transition: opacity 0.25s ease; }
-    .sidebar-nav:hover .signout-btn .tab-label { opacity: 1; }
 
     /* Main Canvas Layout */
     .main-wrapper {
@@ -623,597 +506,457 @@
 </head>
 <body>
 
-  <!-- 🔒 GOOGLE WORKSPACE SSO & MFA LOGIN GATE -->
-  <div id="authGateOverlay">
-    <div class="auth-glass-card">
-      <div class="auth-badge">🛡️ Enterprise SSO • @ltvplus.com Only</div>
-      <h1 class="auth-title">Workforce Analytics Portal</h1>
-      <p class="auth-subtitle">
-        Sign in with your authorized <strong>@ltvplus.com</strong> Google Workspace account to access executive metrics and live ticketing operations.
-      </p>
-
-      <div class="google-btn-wrapper">
-        <div id="g_id_onload"
-             data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
-             data-context="signin"
-             data-ux_mode="popup"
-             data-callback="handleGoogleCredentialResponse"
-             data-hd="ltvplus.com"
-             data-auto_prompt="false">
-        </div>
-        <div class="g_id_signin"
-             data-type="standard"
-             data-shape="pill"
-             data-theme="filled_black"
-             data-text="signin_with"
-             data-size="large"
-             data-logo_alignment="left">
-        </div>
+  <!-- 🍏 FLOATING COLLAPSIBLE SIDEBAR NAVIGATION -->
+  <aside class="sidebar-nav">
+    <div class="sidebar-top-group">
+      <div class="sidebar-header">
+        <span class="sidebar-logo-icon">📂</span>
+        <span class="sidebar-title">Workforce</span>
       </div>
-
-      <div class="auth-security-notes">
-        <div>🔐 <strong>Individual Accounts:</strong> Personal @ltvplus.com credentials required.</div>
-        <div>📱 <strong>MFA Enforced:</strong> Protected by Google Workspace 2-Step Verification.</div>
-        <div>🔒 <strong>Encrypted Transport:</strong> End-to-end HTTPS session security.</div>
-      </div>
-
-      <div id="authErrorBanner"></div>
-    </div>
-  </div>
-
-  <!-- 🛡️ PROTECTED WORKFORCE DASHBOARD SHELL (HIDDEN UNTIL AUTHENTICATED) -->
-  <div id="protectedAppShell">
-
-    <!-- 🍏 FLOATING COLLAPSIBLE SIDEBAR NAVIGATION -->
-    <aside class="sidebar-nav">
-      <div class="sidebar-top-group">
-        <div class="sidebar-header">
-          <span class="sidebar-logo-icon">📂</span>
-          <span class="sidebar-title">Workforce</span>
-        </div>
-        <div class="nav-tabs-vertical">
-          <button class="tab-btn active" onclick="switchTab('overview', event)">
-            <span class="tab-icon">📊</span>
-            <span class="tab-label">Executive Overview</span>
-          </button>
-          <button class="tab-btn" onclick="switchTab('ticketing', event)">
-            <span class="tab-icon">📑</span>
-            <span class="tab-label">WF Ticketing Data</span>
-          </button>
-          <button class="tab-btn" onclick="switchTab('teamlead', event)">
-            <span class="tab-icon">👥</span>
-            <span class="tab-label">Team Lead Analytics</span>
-          </button>
-          <button class="tab-btn" onclick="switchTab('monthlySummary', event)">
-            <span class="tab-icon">📈</span>
-            <span class="tab-label">Monthly Summary</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Authenticated Employee Session & Sign Out -->
-      <div class="sidebar-user-footer">
-        <div class="user-profile-pill">
-          <img id="userAvatarImg" class="user-avatar" src="" alt="User Avatar">
-          <div class="user-meta">
-            <span id="userFullName" class="user-name">Employee</span>
-            <span id="userEmailAddr" class="user-email">@ltvplus.com</span>
-          </div>
-        </div>
-        <button class="signout-btn" onclick="signOutUser()" title="Sign Out">
-          <span class="tab-icon">🚪</span>
-          <span class="tab-label">Sign Out</span>
+      <div class="nav-tabs-vertical">
+        <button class="tab-btn active" onclick="switchTab('overview', event)">
+          <span class="tab-icon">📊</span>
+          <span class="tab-label">Executive Overview</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('ticketing', event)">
+          <span class="tab-icon">📑</span>
+          <span class="tab-label">WF Ticketing Data</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('teamlead', event)">
+          <span class="tab-icon">👥</span>
+          <span class="tab-label">Team Lead Analytics</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('monthlySummary', event)">
+          <span class="tab-icon">📈</span>
+          <span class="tab-label">Monthly Summary</span>
         </button>
       </div>
-    </aside>
+    </div>
 
-    <!-- MAIN DASHBOARD CONTENT CANVAS -->
-    <div class="main-wrapper">
-      <div class="container">
-
-        <!-- Collapsible Glass Status & Control Banner (First Page Only) -->
-        <div id="firstPageControlBanner" class="status-bar-wrapper">
-          <div id="statusBarCard" class="status-bar">
-            <div>
-              <strong>🌐 Data Portal:</strong> <span id="dataStatus">Syncing Live Stream or Awaiting CSV Input...</span>
-            </div>
-            <div class="status-actions">
-              <button class="btn-control" onclick="fetchLiveProxyData()">🔄 Sync Live Sheet</button>
-              <input type="file" id="offlineFileInput" accept=".csv" style="display: none;" onchange="handleFileUpload(event)">
-              <button class="btn-control" onclick="document.getElementById('offlineFileInput').click()">📂 Upload CSV File</button>
-              
-              <button class="btn-control" id="dragToggleBtn" onclick="toggleDragMode()" style="border-color: var(--primary); color: var(--primary);">
-                🔀 Rearrange Sections: OFF
-              </button>
-
-              <div class="dropdown-container">
-                <button class="btn-control">📥 Export View ▾</button>
-                <div class="dropdown-menu">
-                  <div class="dropdown-item" onclick="exportActiveTabCSV()">📄 Export CSV</div>
-                  <div class="dropdown-item" onclick="exportActiveTabExcel()">📊 Export Excel (.xls)</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <button class="status-bar-toggle-btn" onclick="toggleStatusBar()">▲ Collapse Header</button>
+    <!-- Admin Profile Badge -->
+    <div class="sidebar-user-footer">
+      <div class="user-profile-pill">
+        <div class="user-avatar-badge">IA</div>
+        <div class="user-meta">
+          <span class="user-name">Issa Wanjohi Arafat</span>
+          <span class="user-email">👑 ADMIN • ltvplus.com</span>
         </div>
+      </div>
+    </div>
+  </aside>
 
-        <!-- 1. OVERVIEW TAB -->
-        <div id="overview" class="tab-content active">
-          <div class="draggable-zone" id="overviewZone">
+  <!-- MAIN DASHBOARD CONTENT CANVAS -->
+  <div class="main-wrapper">
+    <div class="container">
+
+      <!-- Collapsible Glass Status & Control Banner (First Page Only) -->
+      <div id="firstPageControlBanner" class="status-bar-wrapper">
+        <div id="statusBarCard" class="status-bar">
+          <div>
+            <strong>🌐 Data Portal:</strong> <span id="dataStatus">Syncing Live Stream or Awaiting CSV Input...</span>
+          </div>
+          <div class="status-actions">
+            <button class="btn-control" onclick="fetchLiveProxyData()">🔄 Sync Live Sheet</button>
+            <input type="file" id="offlineFileInput" accept=".csv" style="display: none;" onchange="handleFileUpload(event)">
+            <button class="btn-control" onclick="document.getElementById('offlineFileInput').click()">📂 Upload CSV File</button>
             
-            <div class="card theme-kpi-zone" draggable="false" data-card-id="ov-kpi">
-              <div class="card-header-bar">
-                <h3>📈 Period Overview & Key Metrics</h3>
-                <div class="card-action-bar">
-                  <span class="drag-handle">:: Drag Section</span>
-                </div>
-              </div>
-              
-              <div class="overview-filter-bar">
-                <div>
-                  <label for="monthFilter">🗓️ Select Period / Month:</label>
-                  <select id="monthFilter" onchange="renderOverviewMetrics()">
-                    <option value="ALL">All Months (Year-to-Date)</option>
-                  </select>
-                </div>
+            <button class="btn-control" id="dragToggleBtn" onclick="toggleDragMode()" style="border-color: var(--primary); color: var(--primary);">
+              🔀 Rearrange Sections: OFF
+            </button>
 
-                <div>
-                  <label for="themeSelect">🎨 Select Theme:</label>
-                  <select id="themeSelect" onchange="changeTheme(this.value)">
-                    <option value="dark">🌌 Obsidian Dark (Default)</option>
-                    <option value="ocean">🌊 Ocean Blue</option>
-                    <option value="light">☀️ Default Light</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="kpi-grid">
-                <div class="kpi-card">
-                  <div class="kpi-title"><span id="kpi-month-label">Selected Month</span> Total Requests 🎟️</div>
-                  <div class="kpi-value" id="sept-total">0</div>
-                </div>
-                <div class="kpi-card">
-                  <div class="kpi-title">Avg Target / Capacity 📈</div>
-                  <div class="kpi-value" id="sept-avg-capacity">0</div>
-                  <div class="kpi-subtext">Target per member (4.5 FTE capacity)</div>
-                </div>
-                <div class="kpi-card">
-                  <div class="kpi-title">Active WF Team Members 🧑‍💻</div>
-                  <div class="kpi-value" id="sept-wf-count">0</div>
-                  <div class="kpi-subtext" style="color: var(--primary); font-weight: 600;">⚡ 4 FT & 1 PT staff</div>
-                </div>
+            <div class="dropdown-container">
+              <button class="btn-control">📥 Export View ▾</button>
+              <div class="dropdown-menu">
+                <div class="dropdown-item" onclick="exportActiveTabCSV()">📄 Export CSV</div>
+                <div class="dropdown-item" onclick="exportActiveTabExcel()">📊 Export Excel (.xls)</div>
               </div>
             </div>
-
-            <!-- TEAM MEMBER ACTIVITY -->
-            <div class="card theme-charts-zone" draggable="false" data-card-id="ov-activity">
-              <div class="card-header-bar">
-                <h3>👥 Team Member Activity</h3>
-                <div class="card-action-bar">
-                  <span class="drag-handle">:: Drag Section</span>
-                </div>
-              </div>
-              <div class="chart-container"><canvas id="wfTeamChart"></canvas></div>
-            </div>
-
-            <!-- STATUS BREAKDOWN METERS & TOP 4 RECENT PENDING TICKETS -->
-            <div class="card theme-charts-zone" draggable="false" data-card-id="ov-status">
-              <div class="card-header-bar">
-                <h3>📊 Status Breakdown & Pending Highlights</h3>
-                <div class="card-action-bar">
-                  <span class="drag-handle">:: Drag Section</span>
-                </div>
-              </div>
-              
-              <div id="statusMetersContainer" class="status-meter-container"></div>
-
-              <div class="pending-tickets-wrapper">
-                <div class="pending-title">⏳ Top 4 Recent Pending Requests (By Timestamp)</div>
-                <div id="recentPendingGrid" class="pending-grid"></div>
-              </div>
-            </div>
-
-            <div class="card theme-tables-zone" draggable="false" data-card-id="ov-weekly">
-              <div class="card-header-bar">
-                <h3>📅 Weekly Ticket Breakdown per Team Member</h3>
-                <div class="card-action-bar">
-                  <span class="drag-handle">:: Drag Section</span>
-                </div>
-              </div>
-              <div class="weekly-container">
-                <table class="weekly-table" id="weeklyTable" style="table-layout: auto;">
-                  <thead>
-                    <tr>
-                      <th style="text-align: left;">Team Member</th>
-                      <th>Week 1</th><th>Week 2</th><th>Week 3</th><th>Week 4</th><th>Week 5</th>
-                      <th>Total Tickets</th>
-                      <th>Target Status 🎯</th>
-                    </tr>
-                  </thead>
-                  <tbody id="weeklyTableBody"></tbody>
-                </table>
-              </div>
-            </div>
-
-            <div class="card theme-tables-zone" draggable="false" data-card-id="ov-matrix">
-              <div class="card-header-bar">
-                <h3>📋 Request Type Breakdown by WF Team Member</h3>
-                <div class="card-action-bar">
-                  <span class="drag-handle">:: Drag Section</span>
-                </div>
-              </div>
-              <div class="matrix-container">
-                <table id="matrixTable" style="table-layout: auto;">
-                  <thead id="matrixHeader"></thead>
-                  <tbody id="matrixBody"></tbody>
-                </table>
-              </div>
-            </div>
-
           </div>
         </div>
+        <button class="status-bar-toggle-btn" onclick="toggleStatusBar()">▲ Collapse Header</button>
+      </div>
 
-        <!-- 2. TICKETING TAB -->
-        <div id="ticketing" class="tab-content">
-          <div class="card">
+      <!-- 1. OVERVIEW TAB -->
+      <div id="overview" class="tab-content active">
+        <div class="draggable-zone" id="overviewZone">
+          
+          <div class="card theme-kpi-zone" draggable="false" data-card-id="ov-kpi">
             <div class="card-header-bar">
-              <h3>📑 WF Ticketing Data Table</h3>
+              <h3>📈 Period Overview & Key Metrics</h3>
               <div class="card-action-bar">
                 <span class="drag-handle">:: Drag Section</span>
               </div>
             </div>
-
-            <div class="slicers-container">
-              <div class="slicer-card">
-                <div class="slicer-title">🧑‍💻 Filter by WF Team Member:</div>
-                <div class="slicer-items" id="wfSlicerItems">
-                  <button class="slicer-btn active" onclick="setSlicer('wf', '')">All</button>
-                </div>
-              </div>
-              <div class="slicer-card">
-                <div class="slicer-title">📌 Filter by Status:</div>
-                <div class="slicer-items" id="statusSlicerItems">
-                  <button class="slicer-btn active" onclick="setSlicer('status', '')">All</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="table-controls">
-              <div class="controls-group-left">
-                <input type="text" id="searchInput" placeholder="🔍 Search table..." onkeyup="filterTable()">
-              </div>
-              <div class="controls-group-right">
-                <button class="btn-control" onclick="toggleColumnPopover()">🎛️ Manage Columns</button>
-                <div class="column-popover" id="columnPopover"></div>
-                <button class="btn-control" id="wrapToggleBtn" onclick="toggleTextWrap()">📝 Wrap Text: OFF</button>
-              </div>
-            </div>
-
-            <div class="table-container">
-              <table id="fullDataTable">
-                <thead id="tableHeader"></thead>
-                <tbody id="tableBody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3. TEAM LEAD ANALYTICS TAB -->
-        <div id="teamlead" class="tab-content">
-          <div class="draggable-zone" id="teamleadZone">
             
-            <div class="card theme-kpi-zone" draggable="false" data-card-id="tl-kpi">
-              <div class="card-header-bar">
-                <h3>👤 Team Lead Overview & Request Insights</h3>
-                <div class="card-action-bar">
-                  <span class="drag-handle">:: Drag Section</span>
-                </div>
-              </div>
-              
-              <div class="overview-filter-bar">
-                <label for="tlMonthFilter">🗓️ Select Period / Month:</label>
-                <select id="tlMonthFilter" onchange="renderTeamLeadAnalytics()">
+            <div class="overview-filter-bar">
+              <div>
+                <label for="monthFilter">🗓️ Select Period / Month:</label>
+                <select id="monthFilter" onchange="renderOverviewMetrics()">
                   <option value="ALL">All Months (Year-to-Date)</option>
                 </select>
               </div>
 
-              <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr);">
-                <div class="kpi-card">
-                  <div class="kpi-title">Identified Team Leads ✉️</div>
-                  <div class="kpi-value" id="tl-count">0</div>
-                </div>
-                <div class="kpi-card">
-                  <div class="kpi-title">Top Requesting Dept 🏢</div>
-                  <div class="kpi-value" id="tl-top-dept" style="font-size: 18px;">-</div>
-                </div>
-                <div class="kpi-card">
-                  <div class="kpi-title">Top 3 Request Drivers 🔝</div>
-                  <div class="kpi-value" id="tl-top-type" style="font-size: 13px; color: var(--primary); line-height: 1.4;">-</div>
-                </div>
-                <div class="kpi-card">
-                  <div class="kpi-title">Prefilled SLA Compliance Rate ⏱️</div>
-                  <div class="kpi-value" id="tl-sla-rate" style="color: var(--accent-green);">0%</div>
-                </div>
+              <div>
+                <label for="themeSelect">🎨 Select Theme:</label>
+                <select id="themeSelect" onchange="changeTheme(this.value)">
+                  <option value="dark">🌌 Obsidian Dark (Default)</option>
+                  <option value="ocean">🌊 Ocean Blue</option>
+                  <option value="light">☀️ Default Light</option>
+                </select>
               </div>
             </div>
 
-            <!-- CARD 1 OF 3: VOLUME TREND BY REQUEST TYPE -->
-            <div class="card theme-charts-zone" draggable="false" data-card-id="tl-chart-volume">
-              <div class="card-header-bar">
-                <h3>🔝 Volume Trend by Request Type</h3>
-                <div class="card-action-bar">
-                  <span class="drag-handle">:: Drag Section</span>
-                </div>
+            <div class="kpi-grid">
+              <div class="kpi-card">
+                <div class="kpi-title"><span id="kpi-month-label">Selected Month</span> Total Requests 🎟️</div>
+                <div class="kpi-value" id="sept-total">0</div>
               </div>
-              <div class="chart-container"><canvas id="reqTypeChart"></canvas></div>
-            </div>
-
-            <!-- CARD 2 OF 3: INTERACTIVE SLA DISTRIBUTION CURVE -->
-            <div class="card theme-charts-zone" draggable="false" data-card-id="tl-chart-sla">
-              <div class="card-header-bar">
-                <h3>⏱️ Interactive SLA Distribution Curve</h3>
-                <div class="card-action-bar">
-                  <span class="drag-handle">:: Drag Section</span>
-                </div>
+              <div class="kpi-card">
+                <div class="kpi-title">Avg Target / Capacity 📈</div>
+                <div class="kpi-value" id="sept-avg-capacity">0</div>
+                <div class="kpi-subtext">Target per member (4.5 FTE capacity)</div>
               </div>
-              <div class="chart-container"><canvas id="slaChart"></canvas></div>
-            </div>
-
-            <!-- CARD 3 OF 3: COMPREHENSIVE SLA COMPLIANCE BREAKDOWN (%) -->
-            <div class="card theme-charts-zone" draggable="false" data-card-id="tl-chart-meters">
-              <div class="card-header-bar">
-                <h3>⏱️ Comprehensive SLA Compliance Breakdown (%)</h3>
-                <div class="card-action-bar">
-                  <span class="drag-handle">:: Drag Section</span>
-                </div>
-              </div>
-              <div id="slaPercentageMeters" class="sla-meters-grid"></div>
-            </div>
-
-            <div class="card theme-tables-zone" draggable="false" data-card-id="tl-matrix">
-              <div class="card-header-bar">
-                <h3>TYPE OF REQUEST × REQUESTING DEPARTMENT</h3>
-                <div class="card-action-bar">
-                  <span class="drag-handle">:: Drag Section</span>
-                </div>
-              </div>
-              <div class="matrix-container">
-                <table id="reqDeptMatrixTable" style="table-layout: auto;">
-                  <thead id="reqDeptMatrixHeader"></thead>
-                  <tbody id="reqDeptMatrixBody"></tbody>
-                </table>
+              <div class="kpi-card">
+                <div class="kpi-title">Active WF Team Members 🧑‍💻</div>
+                <div class="kpi-value" id="sept-wf-count">0</div>
+                <div class="kpi-subtext" style="color: var(--primary); font-weight: 600;">⚡ 4 FT & 1 PT staff</div>
               </div>
             </div>
-
-            <div class="card theme-tables-zone" draggable="false" data-card-id="tl-performance">
-              <div class="card-header-bar">
-                <h3>📊 Tickets per Team Lead & Trackers (SLA Performance)</h3>
-                <div class="card-action-bar">
-                  <span class="drag-handle">:: Drag Section</span>
-                </div>
-              </div>
-              <div class="table-container" style="max-height: 400px;">
-                <table style="table-layout: auto;">
-                  <thead>
-                    <tr>
-                      <th style="text-align: left;">Email Address</th>
-                      <th>Total Tickets</th>
-                      <th>Prefilled (≥4d)</th>
-                      <th>Short Notice (1-3d)</th>
-                      <th>Same Day</th>
-                      <th>Late</th>
-                      <th>Prefilled SLA % ⏱️</th>
-                    </tr>
-                  </thead>
-                  <tbody id="tlTableBody"></tbody>
-                </table>
-              </div>
-            </div>
-
           </div>
-        </div>
 
-        <!-- 4. MONTHLY SUMMARY TAB -->
-        <div id="monthlySummary" class="tab-content">
-          <div class="draggable-zone" id="summaryZone">
+          <!-- TEAM MEMBER ACTIVITY -->
+          <div class="card theme-charts-zone" draggable="false" data-card-id="ov-activity">
+            <div class="card-header-bar">
+              <h3>👥 Team Member Activity</h3>
+              <div class="card-action-bar">
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
+            </div>
+            <div class="chart-container"><canvas id="wfTeamChart"></canvas></div>
+          </div>
+
+          <!-- STATUS BREAKDOWN METERS & TOP 4 RECENT PENDING TICKETS -->
+          <div class="card theme-charts-zone" draggable="false" data-card-id="ov-status">
+            <div class="card-header-bar">
+              <h3>📊 Status Breakdown & Pending Highlights</h3>
+              <div class="card-action-bar">
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
+            </div>
             
-            <!-- CURRENT MONTH SNAPSHOT CARD -->
-            <div class="card theme-kpi-zone" draggable="false" data-card-id="ms-current">
-              <div class="card-header-bar">
-                <h3>⚡ Current Month Active Snapshot (<span id="currentMonthTitle">October</span>)</h3>
-                <div class="card-action-bar">
-                  <span class="drag-handle">:: Drag Section</span>
-                </div>
-              </div>
-              
-              <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 20px;">
-                <div class="kpi-card">
-                  <div class="kpi-title">Period Ticket Volume 🎟️</div>
-                  <div class="kpi-value" id="cm-volume" style="color:var(--primary);">0</div>
-                </div>
-                <div class="kpi-card">
-                  <div class="kpi-title">Period SLA Compliance Rate ⏱️</div>
-                  <div class="kpi-value" id="cm-sla" style="color:var(--accent-green);">0%</div>
-                </div>
-                <div class="kpi-card">
-                  <div class="kpi-title">Period Pending Requests ⏳</div>
-                  <div class="kpi-value" id="cm-pending" style="color:var(--accent-amber);">0</div>
-                </div>
-              </div>
+            <div id="statusMetersContainer" class="status-meter-container"></div>
 
-              <div class="charts-grid">
-                <div>
-                  <h4 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-muted);">🔝 Top 3 Request Drivers (Current Month)</h4>
-                  <div class="chart-container"><canvas id="currentMonthTypesChart"></canvas></div>
-                </div>
-                <div>
-                  <h4 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-muted);">⏱️ Executive SLA Gauge (Current Month)</h4>
-                  <div class="chart-container"><canvas id="currentMonthSlaChart"></canvas></div>
-                </div>
+            <div class="pending-tickets-wrapper">
+              <div class="pending-title">⏳ Top 4 Recent Pending Requests (By Timestamp)</div>
+              <div id="recentPendingGrid" class="pending-grid"></div>
+            </div>
+          </div>
+
+          <div class="card theme-tables-zone" draggable="false" data-card-id="ov-weekly">
+            <div class="card-header-bar">
+              <h3>📅 Weekly Ticket Breakdown per Team Member</h3>
+              <div class="card-action-bar">
+                <span class="drag-handle">:: Drag Section</span>
               </div>
             </div>
+            <div class="weekly-container">
+              <table class="weekly-table" id="weeklyTable" style="table-layout: auto;">
+                <thead>
+                  <tr>
+                    <th style="text-align: left;">Team Member</th>
+                    <th>Week 1</th><th>Week 2</th><th>Week 3</th><th>Week 4</th><th>Week 5</th>
+                    <th>Total Tickets</th>
+                    <th>Target Status 🎯</th>
+                  </tr>
+                </thead>
+                <tbody id="weeklyTableBody"></tbody>
+              </table>
+            </div>
+          </div>
 
-            <div class="card theme-kpi-zone" draggable="false" data-card-id="ms-trends">
-              <div class="card-header-bar">
-                <h3>📈 High-Level Monthly Trends & Executive Analytics</h3>
-                <div class="card-action-bar">
-                  <span class="drag-handle">:: Drag Section</span>
-                </div>
-              </div>
-              
-              <div class="charts-grid">
-                <div>
-                  <h4 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-muted);">🗓️ Monthly Ticket Volume Trend</h4>
-                  <div class="chart-container"><canvas id="monthlyVolumeChart"></canvas></div>
-                </div>
-                <div>
-                  <h4 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-muted);">📊 Prefilled SLA Compliance Curve (%)</h4>
-                  <div class="chart-container"><canvas id="monthlySlaTrendChart"></canvas></div>
-                </div>
-              </div>
-
-              <!-- EXECUTIVE DETAILED NARRATIVE SUMMARY -->
-              <div class="monthly-notes-box">
-                <div class="monthly-notes-title">📝 Executive Performance Analysis & Month-over-Month Summary</div>
-                <ul class="monthly-notes-list" id="executiveAnalysisNotes">
-                  <li>Analysis generating from dataset...</li>
-                </ul>
+          <div class="card theme-tables-zone" draggable="false" data-card-id="ov-matrix">
+            <div class="card-header-bar">
+              <h3>📋 Request Type Breakdown by WF Team Member</h3>
+              <div class="card-action-bar">
+                <span class="drag-handle">:: Drag Section</span>
               </div>
             </div>
+            <div class="matrix-container">
+              <table id="matrixTable" style="table-layout: auto;">
+                <thead id="matrixHeader"></thead>
+                <tbody id="matrixBody"></tbody>
+              </table>
+            </div>
+          </div>
 
-            <div class="card theme-tables-zone" draggable="false" data-card-id="ms-table">
-              <div class="card-header-bar">
-                <h3>📊 Monthly Executive Aggregation Matrix</h3>
-                <div class="card-action-bar">
-                  <span class="drag-handle">:: Drag Section</span>
-                </div>
-              </div>
-              <div class="table-container">
-                <table id="monthlySummaryTable" style="table-layout: auto;">
-                  <thead>
-                    <tr>
-                      <th style="text-align: left;">Month / Period</th>
-                      <th>Total Requests</th>
-                      <th>Active Team Leads</th>
-                      <th>Prefilled (≥4d)</th>
-                      <th>Short Notice</th>
-                      <th>Same Day</th>
-                      <th>Late</th>
-                      <th>SLA Rate (%)</th>
-                    </tr>
-                  </thead>
-                  <tbody id="monthlySummaryTableBody"></tbody>
-                </table>
+        </div>
+      </div>
+
+      <!-- 2. TICKETING TAB -->
+      <div id="ticketing" class="tab-content">
+        <div class="card">
+          <div class="card-header-bar">
+            <h3>📑 WF Ticketing Data Table</h3>
+            <div class="card-action-bar">
+              <span class="drag-handle">:: Drag Section</span>
+            </div>
+          </div>
+
+          <div class="slicers-container">
+            <div class="slicer-card">
+              <div class="slicer-title">🧑‍💻 Filter by WF Team Member:</div>
+              <div class="slicer-items" id="wfSlicerItems">
+                <button class="slicer-btn active" onclick="setSlicer('wf', '')">All</button>
               </div>
             </div>
+            <div class="slicer-card">
+              <div class="slicer-title">📌 Filter by Status:</div>
+              <div class="slicer-items" id="statusSlicerItems">
+                <button class="slicer-btn active" onclick="setSlicer('status', '')">All</button>
+              </div>
+            </div>
+          </div>
 
+          <div class="table-controls">
+            <div class="controls-group-left">
+              <input type="text" id="searchInput" placeholder="🔍 Search table..." onkeyup="filterTable()">
+            </div>
+            <div class="controls-group-right">
+              <button class="btn-control" onclick="toggleColumnPopover()">🎛️ Manage Columns</button>
+              <div class="column-popover" id="columnPopover"></div>
+              <button class="btn-control" id="wrapToggleBtn" onclick="toggleTextWrap()">📝 Wrap Text: OFF</button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table id="fullDataTable">
+              <thead id="tableHeader"></thead>
+              <tbody id="tableBody"></tbody>
+            </table>
           </div>
         </div>
-
       </div>
+
+      <!-- 3. TEAM LEAD ANALYTICS TAB -->
+      <div id="teamlead" class="tab-content">
+        <div class="draggable-zone" id="teamleadZone">
+          
+          <div class="card theme-kpi-zone" draggable="false" data-card-id="tl-kpi">
+            <div class="card-header-bar">
+              <h3>👤 Team Lead Overview & Request Insights</h3>
+              <div class="card-action-bar">
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
+            </div>
+            
+            <div class="overview-filter-bar">
+              <label for="tlMonthFilter">🗓️ Select Period / Month:</label>
+              <select id="tlMonthFilter" onchange="renderTeamLeadAnalytics()">
+                <option value="ALL">All Months (Year-to-Date)</option>
+              </select>
+            </div>
+
+            <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr);">
+              <div class="kpi-card">
+                <div class="kpi-title">Identified Team Leads ✉️</div>
+                <div class="kpi-value" id="tl-count">0</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-title">Top Requesting Dept 🏢</div>
+                <div class="kpi-value" id="tl-top-dept" style="font-size: 18px;">-</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-title">Top 3 Request Drivers 🔝</div>
+                <div class="kpi-value" id="tl-top-type" style="font-size: 13px; color: var(--primary); line-height: 1.4;">-</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-title">Prefilled SLA Compliance Rate ⏱️</div>
+                <div class="kpi-value" id="tl-sla-rate" style="color: var(--accent-green);">0%</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARD 1 OF 3: VOLUME TREND BY REQUEST TYPE -->
+          <div class="card theme-charts-zone" draggable="false" data-card-id="tl-chart-volume">
+            <div class="card-header-bar">
+              <h3>🔝 Volume Trend by Request Type</h3>
+              <div class="card-action-bar">
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
+            </div>
+            <div class="chart-container"><canvas id="reqTypeChart"></canvas></div>
+          </div>
+
+          <!-- CARD 2 OF 3: INTERACTIVE SLA DISTRIBUTION CURVE -->
+          <div class="card theme-charts-zone" draggable="false" data-card-id="tl-chart-sla">
+            <div class="card-header-bar">
+              <h3>⏱️ Interactive SLA Distribution Curve</h3>
+              <div class="card-action-bar">
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
+            </div>
+            <div class="chart-container"><canvas id="slaChart"></canvas></div>
+          </div>
+
+          <!-- CARD 3 OF 3: COMPREHENSIVE SLA COMPLIANCE BREAKDOWN (%) -->
+          <div class="card theme-charts-zone" draggable="false" data-card-id="tl-chart-meters">
+            <div class="card-header-bar">
+              <h3>⏱️ Comprehensive SLA Compliance Breakdown (%)</h3>
+              <div class="card-action-bar">
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
+            </div>
+            <div id="slaPercentageMeters" class="sla-meters-grid"></div>
+          </div>
+
+          <div class="card theme-tables-zone" draggable="false" data-card-id="tl-matrix">
+            <div class="card-header-bar">
+              <h3>TYPE OF REQUEST × REQUESTING DEPARTMENT</h3>
+              <div class="card-action-bar">
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
+            </div>
+            <div class="matrix-container">
+              <table id="reqDeptMatrixTable" style="table-layout: auto;">
+                <thead id="reqDeptMatrixHeader"></thead>
+                <tbody id="reqDeptMatrixBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card theme-tables-zone" draggable="false" data-card-id="tl-performance">
+            <div class="card-header-bar">
+              <h3>📊 Tickets per Team Lead & Trackers (SLA Performance)</h3>
+              <div class="card-action-bar">
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
+            </div>
+            <div class="table-container" style="max-height: 400px;">
+              <table style="table-layout: auto;">
+                <thead>
+                  <tr>
+                    <th style="text-align: left;">Email Address</th>
+                    <th>Total Tickets</th>
+                    <th>Prefilled (≥4d)</th>
+                    <th>Short Notice (1-3d)</th>
+                    <th>Same Day</th>
+                    <th>Late</th>
+                    <th>Prefilled SLA % ⏱️</th>
+                  </tr>
+                </thead>
+                <tbody id="tlTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 4. MONTHLY SUMMARY TAB -->
+      <div id="monthlySummary" class="tab-content">
+        <div class="draggable-zone" id="summaryZone">
+          
+          <!-- CURRENT MONTH SNAPSHOT CARD -->
+          <div class="card theme-kpi-zone" draggable="false" data-card-id="ms-current">
+            <div class="card-header-bar">
+              <h3>⚡ Current Month Active Snapshot (<span id="currentMonthTitle">October</span>)</h3>
+              <div class="card-action-bar">
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
+            </div>
+            
+            <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 20px;">
+              <div class="kpi-card">
+                <div class="kpi-title">Period Ticket Volume 🎟️</div>
+                <div class="kpi-value" id="cm-volume" style="color:var(--primary);">0</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-title">Period SLA Compliance Rate ⏱️</div>
+                <div class="kpi-value" id="cm-sla" style="color:var(--accent-green);">0%</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-title">Period Pending Requests ⏳</div>
+                <div class="kpi-value" id="cm-pending" style="color:var(--accent-amber);">0</div>
+              </div>
+            </div>
+
+            <div class="charts-grid">
+              <div>
+                <h4 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-muted);">🔝 Top 3 Request Drivers (Current Month)</h4>
+                <div class="chart-container"><canvas id="currentMonthTypesChart"></canvas></div>
+              </div>
+              <div>
+                <h4 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-muted);">⏱️ Executive SLA Gauge (Current Month)</h4>
+                <div class="chart-container"><canvas id="currentMonthSlaChart"></canvas></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card theme-kpi-zone" draggable="false" data-card-id="ms-trends">
+            <div class="card-header-bar">
+              <h3>📈 High-Level Monthly Trends & Executive Analytics</h3>
+              <div class="card-action-bar">
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
+            </div>
+            
+            <div class="charts-grid">
+              <div>
+                <h4 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-muted);">🗓️ Monthly Ticket Volume Trend</h4>
+                <div class="chart-container"><canvas id="monthlyVolumeChart"></canvas></div>
+              </div>
+              <div>
+                <h4 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-muted);">📊 Prefilled SLA Compliance Curve (%)</h4>
+                <div class="chart-container"><canvas id="monthlySlaTrendChart"></canvas></div>
+              </div>
+            </div>
+
+            <!-- EXECUTIVE DETAILED NARRATIVE SUMMARY -->
+            <div class="monthly-notes-box">
+              <div class="monthly-notes-title">📝 Executive Performance Analysis & Month-over-Month Summary</div>
+              <ul class="monthly-notes-list" id="executiveAnalysisNotes">
+                <li>Analysis generating from dataset...</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="card theme-tables-zone" draggable="false" data-card-id="ms-table">
+            <div class="card-header-bar">
+              <h3>📊 Monthly Executive Aggregation Matrix</h3>
+              <div class="card-action-bar">
+                <span class="drag-handle">:: Drag Section</span>
+              </div>
+            </div>
+            <div class="table-container">
+              <table id="monthlySummaryTable" style="table-layout: auto;">
+                <thead>
+                  <tr>
+                    <th style="text-align: left;">Month / Period</th>
+                    <th>Total Requests</th>
+                    <th>Active Team Leads</th>
+                    <th>Prefilled (≥4d)</th>
+                    <th>Short Notice</th>
+                    <th>Same Day</th>
+                    <th>Late</th>
+                    <th>SLA Rate (%)</th>
+                  </tr>
+                </thead>
+                <tbody id="monthlySummaryTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   </div>
 
   <script>
     Chart.register(ChartDataLabels);
 
-    // =========================================================================
-    // 🔒 SECURITY & AUTHENTICATION CONFIGURATION (@ltvplus.com ONLY)
-    // =========================================================================
-    const ALLOWED_DOMAIN = "ltvplus.com";
-    const SESSION_STORAGE_KEY = "ltvplus_wf_sso_session";
     const GOOGLE_SHEET_PROXY_URL = "https://script.google.com/macros/s/AKfycbyWV-68IeAHIQQBYIadbZrO9UNZMve7SY8SAyIVhyluXNZiJ0fWqxrm94GhH2UlzhqLJA/exec";
 
-    let authenticatedUser = null;
-
-    function parseJwtPayload(token) {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
-        '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-      ).join(''));
-      return JSON.parse(jsonPayload);
-    }
-
-    function showAuthError(message) {
-      const banner = document.getElementById('authErrorBanner');
-      banner.style.display = 'block';
-      banner.innerHTML = `⛔ <strong>Access Denied:</strong> ${message}`;
-    }
-
-    function handleGoogleCredentialResponse(response) {
-      try {
-        const payload = parseJwtPayload(response.credential);
-        const email = (payload.email || '').toLowerCase().trim();
-        const emailVerified = payload.email_verified;
-
-        if (!emailVerified || !email.endsWith(`@${ALLOWED_DOMAIN}`)) {
-          showAuthError(`Account <strong>${email || 'Unknown'}</strong> is unauthorized. Only verified <strong>@${ALLOWED_DOMAIN}</strong> employee accounts may access this portal.`);
-          return;
-        }
-
-        const sessionData = {
-          name: payload.name || email.split('@')[0],
-          email: email,
-          picture: payload.picture || '',
-          exp: payload.exp
-        };
-
-        sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionData));
-        unlockDashboard(sessionData);
-      } catch (err) {
-        console.error("SSO Verification Error:", err);
-        showAuthError("Unable to verify Google Workspace credentials. Please try signing in again.");
-      }
-    }
-
-    function unlockDashboard(user) {
-      authenticatedUser = user;
-      document.getElementById('authGateOverlay').style.display = 'none';
-      document.getElementById('protectedAppShell').style.display = 'flex';
-
-      document.getElementById('userFullName').innerText = user.name;
-      document.getElementById('userEmailAddr').innerText = user.email;
-      if (user.picture) {
-        document.getElementById('userAvatarImg').src = user.picture;
-      }
-
-      initDragAndDrop();
-      fetchLiveProxyData();
-    }
-
-    function signOutUser() {
-      sessionStorage.removeItem(SESSION_STORAGE_KEY);
-      authenticatedUser = null;
-      globalObjects = [];
-      if (window.google && google.accounts && google.accounts.id) {
-        google.accounts.id.disableAutoSelect();
-      }
-      document.getElementById('protectedAppShell').style.display = 'none';
-      document.getElementById('authGateOverlay').style.display = 'flex';
-      document.getElementById('authErrorBanner').style.display = 'none';
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      const savedSession = sessionStorage.getItem(SESSION_STORAGE_KEY);
-      if (savedSession) {
-        try {
-          const parsed = JSON.parse(savedSession);
-          const nowInSeconds = Math.floor(Date.now() / 1000);
-          if (parsed.email && parsed.email.endsWith(`@${ALLOWED_DOMAIN}`) && (!parsed.exp || parsed.exp > nowInSeconds)) {
-            unlockDashboard(parsed);
-            return;
-          }
-        } catch (e) {
-          sessionStorage.removeItem(SESSION_STORAGE_KEY);
-        }
-      }
-    });
-
-    // =========================================================================
-    // 📊 DASHBOARD DATA & VISUALIZATION ENGINE (ONLY RUNS AFTER AUTH)
-    // =========================================================================
     let globalObjects = [];
     let globalHeaders = [];
     let hiddenColumns = new Set();
@@ -1238,8 +981,12 @@
       'request lead time': ['Prefilled (>=4 days)', 'Short notice (1-3 days)', 'Same day submission', 'Late']
     };
 
+    window.addEventListener('DOMContentLoaded', () => {
+      initDragAndDrop();
+      fetchLiveProxyData();
+    });
+
     function fetchLiveProxyData() {
-      if (!authenticatedUser) return;
       const statusElement = document.getElementById('dataStatus');
       if (statusElement) statusElement.innerText = "Syncing live data stream...";
 
@@ -1251,12 +998,12 @@
           if (results.data && results.data.length > 0) {
             processParsedData(results.data, results.meta.fields, "Live Google Sheet");
           } else if (statusElement) {
-            statusElement.innerHTML = `<span style="color:#f59e0b; font-weight:bold;">Live stream empty</span> - Upload CSV or check proxy permissions`;
+            statusElement.innerHTML = `<span style="color:#f59e0b; font-weight:bold;">Live stream empty</span> - Use "Upload CSV File" button`;
           }
         },
         error: function() {
           if (statusElement) {
-            statusElement.innerHTML = `<span style="color:#f59e0b; font-weight:bold;">Live proxy restricted</span> - Use "Upload CSV File" button`;
+            statusElement.innerHTML = `<span style="color:#f59e0b; font-weight:bold;">Awaiting CSV File</span> - Click "Upload CSV File" to load data`;
           }
         }
       });
@@ -1389,7 +1136,6 @@
     }
 
     function handleFileUpload(event) {
-      if (!authenticatedUser) return;
       const file = event.target.files[0];
       if (!file) return;
 
@@ -1412,7 +1158,6 @@
     }
 
     function processParsedData(data, fields, sourceName) {
-      if (!authenticatedUser) return;
       globalObjects = data;
       globalHeaders = fields;
 
@@ -1858,7 +1603,6 @@
       document.getElementById('matrixBody').innerHTML = rowsHTML;
     }
 
-    // 3. Render Team Lead Analytics with TOP 3 DRIVERS IN KPI
     function renderTeamLeadAnalytics() {
       const selectedMonth = document.getElementById('tlMonthFilter').value;
       const labelColor = getChartTextColor();
@@ -1952,7 +1696,6 @@
         </div>
       `;
 
-      // CURVED GRADIENT AREA CHART 1: Request Type Trend
       const topTypesSorted = sortedTypes.slice(0, 6);
       const ctxReq = document.getElementById('reqTypeChart').getContext('2d');
       const gradReq = ctxReq.createLinearGradient(0, 0, 0, 240);
@@ -1989,7 +1732,6 @@
         }
       });
 
-      // CURVED GRADIENT AREA CHART 2: SLA Distribution
       const ctxSla = document.getElementById('slaChart').getContext('2d');
       const gradSla = ctxSla.createLinearGradient(0, 0, 0, 240);
       gradSla.addColorStop(0, 'rgba(45, 212, 191, 0.4)');
@@ -2044,7 +1786,6 @@
       }).join('');
     }
 
-    // 4. MONTHLY SUMMARY & CURRENT MONTH SNAPSHOT ENGINE
     function renderMonthlySummary() {
       const labelColor = getChartTextColor();
       const monthlyData = {};
@@ -2099,7 +1840,6 @@
       document.getElementById('cm-sla').innerText = `${cmSlaPct}%`;
       document.getElementById('cm-pending').innerText = cmData.pending;
 
-      // TOP 3 DRIVERS HORIZONTAL BAR CHART FOR CURRENT MONTH
       const top3CmTypes = Object.keys(cmData.types).sort((a,b) => cmData.types[b] - cmData.types[a]).slice(0, 3);
       const ctxCmTypes = document.getElementById('currentMonthTypesChart').getContext('2d');
       if (currentMonthTypesChartInstance) currentMonthTypesChartInstance.destroy();
@@ -2116,7 +1856,6 @@
         }
       });
 
-      // HIGH-LEVEL EXECUTIVE GAUGE (SEMI-DOUGHNUT) FOR CURRENT MONTH SLA
       const ctxCmSla = document.getElementById('currentMonthSlaChart').getContext('2d');
       if (currentMonthSlaChartInstance) currentMonthSlaChartInstance.destroy();
       currentMonthSlaChartInstance = new Chart(ctxCmSla, {
@@ -2139,7 +1878,6 @@
         }
       });
 
-      // OVERALL MONTHLY TREND CHARTS
       const validMonthKeys = monthKeys.filter(m => m !== 'Unspecified');
       const volumeList = validMonthKeys.map(m => monthlyData[m].total);
       const slaRateList = validMonthKeys.map(m => {
@@ -2201,7 +1939,6 @@
         }
       });
 
-      // Table Render
       document.getElementById('monthlySummaryTableBody').innerHTML = validMonthKeys.map(m => {
         const d = monthlyData[m];
         const slaPct = d.total > 0 ? ((d.prefilled / d.total) * 100).toFixed(1) : 0;
@@ -2218,7 +1955,6 @@
           </tr>`;
       }).join('');
 
-      // DETAILED HIGH-LEVEL EXECUTIVE SUMMARY FOR CURRENT MONTH
       const topDriverName = top3CmTypes[0] || 'N/A';
       const topDriverCount = cmData.types[topDriverName] || 0;
       const topDriverPct = cmData.total > 0 ? ((topDriverCount / cmData.total) * 100).toFixed(1) : 0;
